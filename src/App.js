@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import styled from "styled-components";
+import { Switch, Route } from "react-router-dom";
+
+import LiveStreamPage from "./container/LiveStreamPage";
+import SettingPage from "./container/SettingPages";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppWrapper>
+      <Switch>
+        <Route path="/live-stream/:videoId" component={LiveStreamPage} />
+        <Route path="/setting" component={SettingPage} />
+      </Switch>
+    </AppWrapper>
   );
 }
+
+const AppWrapper = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgb(250, 229, 211);
+`;
 
 export default App;

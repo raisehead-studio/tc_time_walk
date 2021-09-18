@@ -5,17 +5,21 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter as Router } from "react-router-dom";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import { store } from "./redux/store";
+import { Provider } from "react-redux";
 
 import DateFnsUtils from "@date-io/date-fns";
 
 ReactDOM.render(
-  <Router>
-    <React.StrictMode>
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <App />
-      </MuiPickersUtilsProvider>
-    </React.StrictMode>
-  </Router>,
+  <Provider store={store}>
+    <Router>
+      <React.StrictMode>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <App />
+        </MuiPickersUtilsProvider>
+      </React.StrictMode>
+    </Router>
+  </Provider>,
   document.getElementById("root")
 );
 

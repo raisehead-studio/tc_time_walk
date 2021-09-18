@@ -27,6 +27,12 @@ const InputArea = ({ handleUpdate }) => {
       videoName: state.videoName,
       videoLink: state.videoLink,
       startDate: state.startDate,
+      subscription: [
+        "1234",
+        "1234",
+        "1234",
+        "1234",
+      ]
     };
     handleUpdate(data);
     setState((state) => ({

@@ -1,15 +1,29 @@
 import styled from "styled-components";
-import { Switch, Route } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 
+import LoginRequired from "./components/LoginRequired/LoginRequired";
 import LiveStreamPage from "./container/LiveStreamPage";
+import EventRegisterForm from "./container/EventRegisterForm";
 import SettingPage from "./container/SettingPages";
+import AdminLogin from "./container/AdminLogin";
+import firebase from "./util/firebase";
 
-function App() {
+const firebaseAppAuth = firebase.auth();
+
+function App({ user }) {
   return (
     <AppWrapper>
       <Switch>
-        <Route path="/live-stream/:videoId" component={LiveStreamPage} />
-        <Route path="/setting" component={SettingPage} />
+        <Route path="/admin" component={AdminLogin} />
+        <LoginRequired exact path="/" component={SettingPage} />
+        <LoginRequired
+          path="/event_signup/:eventId"
+          component={EventRegisterForm}
+        />
+        <LoginRequired
+          path="/live-stream/:videoId"
+          component={LiveStreamPage}
+        />
       </Switch>
     </AppWrapper>
   );

@@ -10,7 +10,7 @@ import LinkIcon from "@material-ui/icons/Link";
 
 import Spinner from "../Spinner/Spinner";
 
-const VideoList = ({ loading, videoListData }) => {
+const VideoList = ({ loading, videoListData = {} }) => {
   const history = useHistory();
   const handleParsedData = (data) => {
     const arr = [];
@@ -41,6 +41,17 @@ const VideoList = ({ loading, videoListData }) => {
   return (
     <VideoListWrapper>
       <VideoLists>
+        <VideoListItem isheader={true}>
+          <VideoListText isheader={true} width={30}>
+            影片名稱
+          </VideoListText>
+          <VideoListText isheader={true} width={60}>
+            影片連結
+          </VideoListText>
+          <VideoListText isheader={true} width={10}>
+            開啟影片
+          </VideoListText>
+        </VideoListItem>
         {memoedVideoList.map((row) => {
           return (
             <VideoListItem key={row.id}>
@@ -72,11 +83,14 @@ const VideoLists = styled(List)`
 `;
 const VideoListItem = styled(ListItem)`
   width: 100%;
+  border-bottom: ${(p) => (p.isheader ? "1px solid #666666" : "")};
 `;
 const VideoListText = styled(ListItemText)`
   width: ${(p) => `${p.width}%`};
   > span {
     color: #666666;
+    font-weight: ${(p) => (p.isheader ? "700" : "400")};
+    font-size: ${(p) => (p.isheader ? "1.15rem" : "1rem")};
   }
 `;
 const VideoListIcon = styled(ListItemIcon)`

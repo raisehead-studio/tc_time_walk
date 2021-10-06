@@ -15,7 +15,6 @@ const VideoIframe = ({
   eventId,
 }) => {
   const current = new Date().getTime();
-  console.log(videoLink.split("/")[videoLink.split("/").length - 1]);
   if (loading) {
     return <Spinner />;
   } else {

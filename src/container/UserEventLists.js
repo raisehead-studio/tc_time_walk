@@ -79,9 +79,10 @@ const UserEventLists = (props) => {
   };
 
   const handleOpenVideoPage = (id, isExpired, eventLink) => {
-    if (eventLink) {
-      if (!isExpired) history.push(`/live-stream/${id}`);
-    }
+    // if (eventLink) {
+    //   if (!isExpired) history.push(`/live-stream/${id}`);
+    // }
+    history.push(`/live-stream/${id}`);
   };
 
   return (
@@ -126,14 +127,19 @@ const UserEventLists = (props) => {
                     notAllow={!event.isPaid || isExpired}
                     isHover
                     onClick={
-                      !event.isPaid
-                        ? () => {}
-                        : () =>
-                            handleOpenVideoPage(
-                              event.eventId,
-                              isExpired,
-                              event.eventLink
-                            )
+                      handleOpenVideoPage(
+                        event.eventId,
+                        isExpired,
+                        event.eventLink
+                      )
+                      // !event.isPaid
+                      //   ? () => {}
+                      //   : () =>
+                      //       handleOpenVideoPage(
+                      //         event.eventId,
+                      //         isExpired,
+                      //         event.eventLink
+                      //       )
                     }
                   >
                     {!event.isPaid

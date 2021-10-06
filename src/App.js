@@ -12,6 +12,7 @@ import PayFailPage from "./container/PayFailPage";
 import PaySuccedPage from "./container/PaySuccedPage";
 import Header from "./components/Header";
 import Spinner from "./components/Spinner/Spinner";
+import SignOut from "./container/SignOut";
 
 import firebase from "./util/firebase";
 
@@ -28,6 +29,7 @@ function App() {
       <Header />
       <Switch>
         <Route path="/admin" component={AdminLogin} />
+        <Route path="/sign_out" component={SignOut} />
         <LoginRequired exact path="/" component={SettingPage} />
         <LoginRequired path="/event_list/:uid" component={UserEventLists} />
         <LoginRequired

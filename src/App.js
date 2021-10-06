@@ -22,8 +22,6 @@ const providers = {
 };
 
 function App() {
-  console.log(process.env.REACT_APP_CLIENT_ID);
-
   return (
     <AppWrapper>
       <Header />

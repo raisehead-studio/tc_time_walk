@@ -1,12 +1,23 @@
 import styled from "styled-components";
 
-const Spinner = () => {
+const Spinner = ({ isRePosition }) => {
   return (
-    <SpinnerWrapper>
-      <div className="loader" />
-    </SpinnerWrapper>
+    <SpinnerOuterContainer isRePosition={isRePosition}>
+      <SpinnerWrapper>
+        <div className="loader" />
+      </SpinnerWrapper>
+    </SpinnerOuterContainer>
   );
 };
+
+const SpinnerOuterContainer = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: ${(p) => (p.isRePosition ? "translateY(-150px)" : "")};
+`;
 
 const SpinnerWrapper = styled.div`
   min-height: 30vh;
@@ -16,14 +27,14 @@ const SpinnerWrapper = styled.div`
   .loader,
   .loader:before,
   .loader:after {
-    background: #fae5d3;
+    background: #2b8397;
     -webkit-animation: load1 1s infinite ease-in-out;
     animation: load1 1s infinite ease-in-out;
     width: 1em;
     height: 4em;
   }
   .loader {
-    color: #fae5d3;
+    color: #2b8397;
     text-indent: -9999em;
     margin: 88px auto;
     position: relative;

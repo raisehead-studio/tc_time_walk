@@ -1,12 +1,14 @@
 import React from "react";
 import styled from "styled-components";
+import { useHistory } from "react-router";
 import withFirebaseAuth from "react-with-firebase-auth";
 import { useDispatch, useSelector } from "react-redux";
 import firebase from "../../util/firebase";
 import { Switch, Route } from "react-router-dom";
 
 import SignInCard from "../SignInCard/SignInCard";
-import { handleFetchAdmin, handleIsAdmin } from "../../redux/user";
+import { handleCheckIsAdmin } from "../../util/api";
+import { handleIsAdmin } from "../../redux/user";
 
 const firebaseAppAuth = firebase.auth();
 const providers = {
@@ -14,23 +16,27 @@ const providers = {
 };
 
 const LoginRequired = (props) => {
+  const history = useHistory();
   const { user, signOut, signInWithGoogle } = props;
-  const { users, isAdmin } = useSelector((state) => state.user);
+  const { isAdmin } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   React.useEffect(() => {
-    dispatch(handleFetchAdmin());
-  }, [dispatch]);
-
-  React.useEffect(() => {
-    dispatch(handleIsAdmin(user));
+    if (user) {
+      const { email } = user.multiFactor.user;
+      handleCheckIsAdmin(email.split("@")[0]).then((res) => {
+        if (res.data) {
+          dispatch(handleIsAdmin(true));
+        } else {
+          dispatch(handleIsAdmin(false));
+        }
+      });
+    }
   }, [user]);
 
   const handleSignIn = () => {
     signInWithGoogle();
   };
-
-  console.log(isAdmin);
 
   // signOut();
 
@@ -46,11 +52,12 @@ const LoginRequired = (props) => {
 };
 
 const SingInWrapper = styled.div`
-  width: 100vw;
-  height: 100vh;
+  width: 50%;
+  height: 250px;
   display: flex;
   justify-content: center;
-  align-items: center;
+  transform: translateY(70px);
+  /* align-items: center; */
 `;
 
 export default withFirebaseAuth({

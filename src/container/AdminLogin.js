@@ -2,13 +2,12 @@ import React from "react";
 import styled from "styled-components";
 import withFirebaseAuth from "react-with-firebase-auth";
 import { useHistory } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import TextField from "@material-ui/core/TextField";
 import Card from "@material-ui/core/Card";
-import Button from "@material-ui/core/Button";
-
-import { handleFetchAdmin } from "../redux/user";
 import firebase from "../util/firebase";
+import Swal from "sweetalert2";
+
+import googleSingIn from "../assets/images/btn_google_signin_light_disabled_web@2x.png";
+import { handleCheckIsAdmin } from "../util/api";
 
 const firebaseAppAuth = firebase.auth();
 const providers = {
@@ -16,69 +15,66 @@ const providers = {
 };
 
 const AdminLogin = (props) => {
-  const { signInWithEmailAndPassword } = props;
-  const dispatch = useDispatch();
+  const { signInWithGoogle, signOut } = props;
   const history = useHistory();
-  const [state, setState] = React.useState({
-    accounts: "",
-    password: "",
-  });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  const handleSignIn = () => {
+    signInWithGoogle().then((res) => {
+      const { email } = res.user.multiFactor.user;
+      let checkEmail;
+      if (email.split("@")[0].indexOf(".") > 0) {
+        checkEmail = email.split("@")[0].split(".")[0];
+      } else {
+        checkEmail = email.split("@")[0];
+      }
 
-    setState((state) => ({ ...state, [name]: value }));
-  };
-
-  const handleSingInWithEmailAndPassword = () => {
-    const { accounts, password } = state;
-    signInWithEmailAndPassword(accounts, password).then((res) => {
-      // dispatch(updateUser(res));
-      // history.push("/settings");
+      handleCheckIsAdmin(checkEmail).then((res) => {
+        if (res.data) {
+          history.push("/");
+        } else {
+          Swal.fire("無管理者權限。");
+          signOut();
+          history.push("/");
+        }
+      });
     });
   };
 
-  React.useEffect(() => {
-    dispatch(handleFetchAdmin());
-  }, [dispatch]);
-
   return (
-    <AdminLoginWrapper>
-      <Inputs
-        label="管理者帳號"
-        type="text"
-        value={state.accounts}
-        onChange={handleChange}
-        name="accounts"
+    <SignInWrapper>
+      <SignInText>管理者登入</SignInText>
+      <SignInButton
+        onClick={handleSignIn}
+        src={googleSingIn}
+        alt="google-sign-in"
       />
-      <Inputs
-        label="管理者密碼"
-        type="password"
-        value={state.password}
-        onChange={handleChange}
-        name="password"
-      />
-      <Button onClick={handleSingInWithEmailAndPassword}>登入</Button>
-    </AdminLoginWrapper>
+    </SignInWrapper>
   );
 };
 
-const AdminLoginWrapper = styled(Card)`
+const SignInWrapper = styled(Card)`
+  padding: 20px 5px;
   display: flex;
+  justify-content: center;
   flex-direction: column;
-  width: 60%;
-  margin-top: 150px;
-  align-items: center;
-  padding: 20px;
+  margin-top: 150px; ;
 `;
 
-const Inputs = styled(TextField)`
-  margin: 10px 5% !important;
-  width: ${(p) => `${p.width ? p.width : "90"}%`};
+const SignInButton = styled.img`
+  transform: scale(0.6);
+  cursor: pointer;
 
-  .MuiFormControl-root {
-    margin: 10px 0px;
+  &:hover {
   }
+`;
+
+const SignInText = styled.h1`
+  width: 100%;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ff5733;
+  /* padding: 20px 5px; */
 `;
 
 export default withFirebaseAuth({

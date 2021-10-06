@@ -38,7 +38,7 @@ const SignInText = styled.h1`
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ff5733;
+  color: #2b8397;
   /* padding: 20px 5px; */
 `;
 

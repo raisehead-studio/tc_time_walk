@@ -22,13 +22,7 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     handleIsAdmin: (state, action) => {
-      console.log(action.payload);
-
-      const isAdmin =
-        state.adminList.findIndex(
-          (id) => id === action.payload.user.multiFactor.user.uid
-        ) > -1;
-      state.isAdmin = isAdmin;
+      state.isAdmin = action.payload;
     },
   },
   extraReducers: (builder) => {

@@ -3,31 +3,30 @@ import styled from "styled-components";
 import { useParams } from "react-router-dom";
 
 import VideoIframe from "../components/VideoIframe/VideoIframe";
-import { handleFetchVideoData } from "../util/api";
+import { useDispatch, useSelector } from "react-redux";
+
+import { handleFetchEventDetail } from "../redux/events";
 
 const LiveStreamPage = () => {
   const { videoId } = useParams();
-  const [state, setState] = React.useState({
-    loading: false,
-    startDate: "",
-    videoLink: "",
-    videoName: "",
-  });
+  const { eventDetail, eventDetailLoading } = useSelector(
+    (state) => state.events
+  );
+  const dispatch = useDispatch();
 
   React.useEffect(() => {
-    setState((state) => ({ ...state, loading: true }));
-    handleFetchVideoData(videoId).then((res) => {
-      setState((state) => ({ ...state, loading: false, ...res.data }));
-    });
+    dispatch(handleFetchEventDetail(videoId));
   }, [videoId]);
 
   return (
     <LiveStreamPageWrapper>
       <VideoIframe
-        loading={state.loading}
-        startDate={state.startDate}
-        videoLink={state.videoLink}
-        videoName={state.videoName}
+        eventId={videoId}
+        loading={eventDetailLoading}
+        endDate={eventDetail.endDate}
+        startDate={eventDetail.startDate}
+        videoLink={eventDetail.eventLink}
+        videoName={eventDetail.eventName}
       />
     </LiveStreamPageWrapper>
   );

@@ -137,3 +137,6 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+.swal2-styled.swal2-confirm {
+  background-color: #2b8397 !important;
+}

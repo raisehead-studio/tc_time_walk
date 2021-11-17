@@ -124,6 +124,17 @@ const VideoList = ({
     handleGetData();
   };
 
+  const handleDisplayDateAndTime = (date) => {
+    const hours = date.getHours();
+    const minutes = "0" + date.getMinutes();
+
+    const formattedTime = hours + ":" + minutes.substr(-2);
+
+    return `${date.getFullYear()}/${
+      date.getMonth() + 1
+    }/${date.getDate()} ${formattedTime}  `;
+  };
+
   return (
     <VideoListWrapper>
       <Modal open={state.isModalOpen} onClose={handleClose}>
@@ -193,9 +204,9 @@ const VideoList = ({
                 <VideoListText width={window.innerWidth > 750 ? 30 : 40}>
                   {row.eventName}
                 </VideoListText>
-                <VideoListText width={40}>{`${handleDisplayDate(
+                <VideoListText width={40}>{`${handleDisplayDateAndTime(
                   startDate
-                )} ~ ${handleDisplayDate(endDate)}`}</VideoListText>
+                )} ~ ${handleDisplayDateAndTime(endDate)}`}</VideoListText>
                 {row.eventLink ? (
                   <VideoListIcon
                     onClick={() => handleOpenVideoPage(row.id)}
@@ -399,6 +410,17 @@ const InfoDetail = ({
     handleCloseModal();
   };
 
+  const handleDisplayDateAndTime = (date) => {
+    const hours = date.getHours();
+    const minutes = "0" + date.getMinutes();
+
+    const formattedTime = hours + ":" + minutes.substr(-2);
+
+    return `${date.getFullYear()}/${
+      date.getMonth() + 1
+    }/${date.getDate()} ${formattedTime}  `;
+  };
+
   const handleNotifyUser = (type, email) => {
     Swal.fire({
       html: `<div style="display:flex; justify-content: flex-start; text-align: center">
@@ -465,7 +487,7 @@ const InfoDetail = ({
           </InfoDetailItemKey>
           <InfoDetailItemValue>
             <p>
-              {date.getFullYear()} / {date.getMonth() + 1} / {date.getDate()}
+              {date.getFullYear()} / {date.getMonth() + 1} / {date.getDate()}{" "}
             </p>
           </InfoDetailItemValue>
         </InfoDetailItemInnerContainer>

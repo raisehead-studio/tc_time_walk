@@ -44,6 +44,17 @@ const UserEventCard = ({ event, uid }) => {
     return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
   };
 
+  const handleDisplayDateAndTime = (date) => {
+    const hours = date.getHours();
+    const minutes = "0" + date.getMinutes();
+
+    const formattedTime = hours + ":" + minutes.substr(-2);
+
+    return `${date.getFullYear()}/${
+      date.getMonth() + 1
+    }/${date.getDate()} ${formattedTime}  `;
+  };
+
   const handlePurchase = async (id, isExpired) => {
     const eventData = userEvents.filter((event) => event.id === id)[0];
 
@@ -95,8 +106,8 @@ const UserEventCard = ({ event, uid }) => {
       <CustomCardRow>
         <CustomCardRowTitle>時間(Tour Date) :</CustomCardRowTitle>
         <CustomCardRowText>
-          {handleDisplayDate(new Date(event.startDate))} ~{" "}
-          {handleDisplayDate(new Date(event.endDate))}
+          {handleDisplayDateAndTime(new Date(event.startDate))} ~{" "}
+          {handleDisplayDateAndTime(new Date(event.endDate))}
         </CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow>

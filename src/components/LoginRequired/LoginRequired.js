@@ -24,13 +24,11 @@ const LoginRequired = (props) => {
   React.useEffect(() => {
     if (user) {
       const { email } = user.multiFactor.user;
-      handleCheckIsAdmin(email.split("@")[0]).then((res) => {
-        if (res.data || email === "tctimewalk3.0@gmail.com") {
-          dispatch(handleIsAdmin(true));
-        } else {
-          dispatch(handleIsAdmin(false));
-        }
-      });
+      if (email === "tctimewalk3.0@gmail.com") {
+        dispatch(handleIsAdmin(true));
+      } else {
+        dispatch(handleIsAdmin(false));
+      }
     }
   }, [user]);
 

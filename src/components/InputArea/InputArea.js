@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import Card from "@material-ui/core/Card";
 import TextField from "@material-ui/core/TextField";
+import { useSelector } from "react-redux";
 import Button from "@material-ui/core/Button";
 import { DateTimePicker } from "@material-ui/pickers";
 
@@ -18,6 +19,8 @@ import {
 import { startAfter } from "@firebase/firestore";
 
 const InputArea = ({ handleGetData }) => {
+  const { isAdmin } = useSelector((state) => state.user);
+
   const [state, setState] = React.useState({
     eventName: "",
     eventLink: "",
@@ -31,17 +34,19 @@ const InputArea = ({ handleGetData }) => {
   });
 
   React.useEffect(() => {
-    const script = document.createElement("script");
-    script.async = true;
-    script.defer = true;
-    script.src = "https://apis.google.com/js/api.js";
+    if (isAdmin) {
+      const script = document.createElement("script");
+      script.async = true;
+      script.defer = true;
+      script.src = "https://apis.google.com/js/api.js";
 
-    document.body.appendChild(script);
+      document.body.appendChild(script);
 
-    script.addEventListener("load", () => {
-      if (window.gapi) handleClientLoad();
-    });
-  }, []);
+      script.addEventListener("load", () => {
+        if (window.gapi) handleClientLoad();
+      });
+    }
+  }, [isAdmin]);
 
   const handleClientLoad = () => {
     window.gapi.load("client:auth2", initClient);

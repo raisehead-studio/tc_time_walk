@@ -19,6 +19,7 @@ const VideoIframe = ({
     return <Spinner />;
   } else {
     if (endDate > current && current > startDate) {
+      // if (true) {
       return (
         <React.Fragment>
           <Chatroom eventId={eventId} />
@@ -52,11 +53,18 @@ const VideoListWrapper = styled(Card)`
   width: 100%;
   height: 90vh;
   transform: translateY(70px);
+  @media (max-height: 500px) {
+    transform: translateY(55px);
+    height: calc(100vh - 55px);
+  }
 `;
 
 const Iframe = styled.iframe`
   width: 100%;
   height: 100vh;
+  @media (max-height: 500px) {
+    height: calc(100vh - 55px);
+  }
 `;
 
 const NotStartedText = styled.p`

@@ -2,16 +2,17 @@ import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const config = {
-  apiKey: "AIzaSyDcNqgeHL1kF5rc6gZsQ62pDDCsynmBWHM",
-  authDomain: "beans-tool-bi-test-deplyed.firebaseapp.com",
-  databaseURL: "https://beans-tool-bi-test-deplyed-default-rtdb.firebaseio.com",
-  projectId: "beans-tool-bi-test-deplyed",
-  storageBucket: "beans-tool-bi-test-deplyed.appspot.com",
-  messagingSenderId: "497187525287",
-  appId: "1:497187525287:web:8c31f136d0d9a0a756c182",
-  measurementId: "G-61WGR9BNC9",
+  apiKey: "AIzaSyDu6QWUCAEFXgHFfR2rTXN_Lpgo8Pe7Pyc",
+  authDomain: "tctimewalkadmin.firebaseapp.com",
+  databaseURL: "https://tctimewalkadmin-default-rtdb.firebaseio.com",
+  projectId: "tctimewalkadmin",
+  storageBucket: "tctimewalkadmin.appspot.com",
+  messagingSenderId: "875643054812",
+  appId: "1:875643054812:web:b99129ce72955efcc6e219",
+  measurementId: "G-L6REMPZLBR",
 };
 
 if (!firebase.apps.length) {

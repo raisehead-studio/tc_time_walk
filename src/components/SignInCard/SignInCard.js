@@ -23,6 +23,9 @@ const SignInWrapper = styled(Card)`
   display: flex;
   justify-content: center;
   flex-direction: column;
+  background-color: #fff;
+  z-index: 0;
+  background-color: #fff;
 `;
 
 const SignInButton = styled.img`

@@ -67,8 +67,10 @@ const Chatroom = (props) => {
 
         const { photoURL } = user.multiFactor.user.auth.currentUser;
         const { uid } = user.multiFactor.user;
+        const { email } = user.multiFactor.user;
 
         const docRef = await addDoc(collection(db, eventId), {
+          account: email,
           message: state.message,
           uid: uid,
           photoURL: photoURL,
@@ -163,6 +165,18 @@ const ChatRoomsWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+
+  @media (max-width: 750px) {
+    width: 95%;
+    margin: 0px 5%;
+    bottom: 0px;
+    left: 0px;
+    transform: translateX(-5%);
+  }
+
+  @media (max-height: 500px) {
+    width: 40%;
+  }
 `;
 
 const MessageContainer = styled.div`
@@ -175,6 +189,13 @@ const MessageContainer = styled.div`
   align-items: flex-start;
   width: 100%;
   transition: 0.2s height linear;
+  @media (max-width: 750px) {
+    max-height: 50vh;
+  }
+
+  @media (max-height: 500px) {
+    max-height: 30vh;
+  }
 `;
 
 const MessageItem = styled.div`

@@ -15,6 +15,7 @@ import Swal from "sweetalert2";
 import { handleFetchUserData } from "../redux/events";
 import firebase from "../util/firebase";
 import { handleECPayment } from "../util/api";
+import UserEventCard from "../components/UserEventCard";
 
 const firebaseAppAuth = firebase.auth();
 const providers = {
@@ -45,6 +46,15 @@ const UserEventLists = (props) => {
   const handlePurchase = async (id, isExpired) => {
     const eventData = userEvents.filter((event) => event.id === id)[0];
 
+    let price;
+    if (+eventData.numOfParticipant >= +eventData.discount_amount) {
+      price =
+        +eventData.numOfParticipant *
+        +eventData.price *
+        (+eventData.discount_rate * 0.1);
+    } else {
+      price = +eventData.numOfParticipant * +eventData.price;
+    }
     const data = {
       trade_name: eventData.eventName,
       trade_phone: eventData.tel,
@@ -53,7 +63,7 @@ const UserEventLists = (props) => {
       zipcode: "",
       event_id: eventData.eventId,
       order_id: eventData.id,
-      amount_price: eventData.numOfParticipant * eventData.price,
+      amount_price: price,
       user_id: uid,
     };
 
@@ -79,11 +89,26 @@ const UserEventLists = (props) => {
   };
 
   const handleOpenVideoPage = (id, isExpired, eventLink) => {
-    // if (eventLink) {
-    //   if (!isExpired) history.push(`/live-stream/${id}`);
-    // }
-    history.push(`/live-stream/${id}`);
+    if (eventLink) {
+      if (!isExpired) history.push(`/live-stream/${id}`);
+    }
   };
+
+  if (true) {
+    return (
+      <MobileContainer>
+        {userEvents.length === 0 ? (
+          <UserEventListItem>
+            <NoDataText width={100}>
+              您尚未報名任何活動。（No Tour Registered Yet）
+            </NoDataText>
+          </UserEventListItem>
+        ) : (
+          userEvents.map((event) => <UserEventCard event={event} uid={uid} />)
+        )}
+      </MobileContainer>
+    );
+  }
 
   return (
     <UserEventListsWrapper>
@@ -93,90 +118,126 @@ const UserEventLists = (props) => {
             <UserEventListText isheader={true} width={20}>
               活動名稱
             </UserEventListText>
-            <UserEventListText isheader={true} width={30}>
-              時間
-            </UserEventListText>
-            <UserEventListText isheader={true} width={30}>
-              影片連結
+            <UserEventListText isheader={true} width={20}>
+              時間 (Tour date)
             </UserEventListText>
             <UserEventListText isheader={true} width={15}>
-              付款
+              參加人數 (Number of Participants)
+            </UserEventListText>
+            <UserEventListText isheader={true} width={15}>
+              影片連結 (Video Link)
             </UserEventListText>
             <UserEventListText isheader={true} width={5}>
-              內容
+              總價 (Amount)
+            </UserEventListText>
+            <UserEventListText isheader={true} width={15}>
+              付款 (Is Paid)
+            </UserEventListText>
+            <UserEventListText isheader={true} width={5}>
+              內容 (Tour content)
             </UserEventListText>
           </UserEventListItem>
           <UserEventContainer>
-            {userEvents.map((event) => {
-              let isExpired = false;
-              const now = new Date().getTime();
-              if (event.endDate < now || now < event.startDate) {
-                isExpired = true;
-              }
-              return (
-                <UserEventListItem isExpired={isExpired}>
-                  <UserEventListText width={20}>
-                    {event.eventName}
-                  </UserEventListText>
-                  <UserEventListText width={30}>
-                    {handleDisplayDate(new Date(event.startDate))} ~{" "}
-                    {handleDisplayDate(new Date(event.endDate))}
-                  </UserEventListText>
-                  <UserEventListText
-                    width={30}
-                    notAllow={!event.isPaid || isExpired}
-                    isHover
-                    onClick={
-                      handleOpenVideoPage(
-                        event.eventId,
-                        isExpired,
-                        event.eventLink
-                      )
-                      // !event.isPaid
-                      //   ? () => {}
-                      //   : () =>
-                      //       handleOpenVideoPage(
-                      //         event.eventId,
-                      //         isExpired,
-                      //         event.eventLink
-                      //       )
-                    }
-                  >
-                    {!event.isPaid
-                      ? "於付款後開放連結"
-                      : isExpired
-                      ? "活動已結束"
-                      : event.eventLink
-                      ? event.eventLink
-                      : "實體活動"}
-                  </UserEventListText>
-                  <UserEventListIcon width={15}>
-                    {!event.isPaid ? (
+            {userEvents.length === 0 ? (
+              <UserEventListItem>
+                <NoDataText width={100}>
+                  您尚未報名任何活動。（No Tour Registered Yet）
+                </NoDataText>
+              </UserEventListItem>
+            ) : (
+              userEvents.map((event) => {
+                let isExpired = false;
+                let payment_status;
+                const now = new Date().getTime();
+                if (event.endDate < now || now < event.startDate) {
+                  isExpired = true;
+                }
+
+                if (event.isPass) {
+                  if (event.isPaid || event.price === 0) {
+                    payment_status = <IsPardText>報名成功</IsPardText>;
+                  } else {
+                    payment_status = (
                       <React.Fragment>
                         <MonetizationOn
                           onClick={() => handlePurchase(event.id)}
                         />
                         <p>未付款</p>
                       </React.Fragment>
-                    ) : (
-                      <IsPardText>已付款</IsPardText>
-                    )}
-                  </UserEventListIcon>
-                  <UserEventListIcon
-                    width={5}
-                    onClick={() => handleOpenDetail(event.id)}
-                  >
-                    <MoreVert />
-                  </UserEventListIcon>
-                </UserEventListItem>
-              );
-            })}
+                    );
+                  }
+                } else {
+                  payment_status = (
+                    <React.Fragment>
+                      <p>未通過審核</p>
+                    </React.Fragment>
+                  );
+                }
+
+                return (
+                  <UserEventListItem isExpired={isExpired}>
+                    <UserEventListText width={20}>
+                      {event.eventName}
+                    </UserEventListText>
+                    <UserEventListText width={20}>
+                      {handleDisplayDate(new Date(event.startDate))} ~{" "}
+                      {handleDisplayDate(new Date(event.endDate))}
+                    </UserEventListText>
+                    <UserEventListText width={10}>
+                      {event.numOfParticipant}
+                    </UserEventListText>
+                    <UserEventListText
+                      width={15}
+                      notAllow={!event.isPaid || isExpired}
+                      isHover
+                      onClick={
+                        !event.isPaid
+                          ? () => {}
+                          : () =>
+                              handleOpenVideoPage(
+                                event.eventId,
+                                isExpired,
+                                event.eventLink
+                              )
+                      }
+                    >
+                      {!event.isPaid && event.price !== 0
+                        ? "於付款後開放連結"
+                        : isExpired
+                        ? "非活動期間"
+                        : event.eventLink
+                        ? "線上活動連結"
+                        : "實體活動"}
+                    </UserEventListText>
+                    <UserEventListText width={5}>
+                      {event.price === 0 ? "免費活動" : event.price}
+                    </UserEventListText>
+                    <UserEventListIcon width={15}>
+                      {payment_status}
+                    </UserEventListIcon>
+                    <UserEventListIcon
+                      width={5}
+                      onClick={() => handleOpenDetail(event.id)}
+                    >
+                      <MoreVert />
+                    </UserEventListIcon>
+                  </UserEventListItem>
+                );
+              })
+            )}
           </UserEventContainer>
         </UserEventList>
       </UserEventListsCard>
     </UserEventListsWrapper>
   );
 };
+
+const MobileContainer = styled.div`
+  width: 100%;
+  height: 80vh;
+  overflow-y: scroll;
+  transform: translateY(65px);
+`;
 
 const PaymentContainer = styled.div`
   margin: 40px 10%;
@@ -192,8 +253,10 @@ const UserEventListsWrapper = styled(Card)`
   width: 80%;
   height: auto;
   max-height: 80vh;
-  overflow-y: scroll !important;
   transform: translateY(80px);
+  @media (max-height: 500px) {
+    height: 60vh;
+  }
 `;
 
 const UserEventListsCard = styled(Card)`
@@ -212,12 +275,16 @@ const UserEventList = styled(List)`
 const UserEventContainer = styled.div`
   max-height: 70vh;
   overflow-y: scroll;
+  @media (max-height: 500px) {
+    max-height: 50vh;
+  }
 `;
 
 const UserEventListItem = styled(ListItem)`
   width: 100%;
   border-bottom: ${(p) => (p.isheader ? "1px solid #666666" : "")};
   opacity: ${(p) => (p.isExpired ? "0.4" : "1")};
+  height: 40px !important;
 `;
 const UserEventListText = styled(ListItemText)`
   width: ${(p) => `${p.width}%`};
@@ -228,8 +295,8 @@ const UserEventListText = styled(ListItemText)`
     padding: ${(p) => (!p.notAllow ? "0px" : "5px 10px")};
     background-color: ${(p) => (!p.notAllow ? "#fff" : "#666666")};
     font-weight: ${(p) => (p.isheader ? "700" : "400")};
-    font-size: ${(p) => (p.isheader ? "16px" : "14px")};
-    text-align: ${(p) => (!p.notAllow ? "left" : "center")};
+    font-size: ${(p) => (p.isheader ? "13px" : "12px")};
+    text-align: ${(p) => (p.notAllow ? "left" : "center")};
     cursor: ${(p) => (!p.notAllow && p.isHover ? "pointer" : "")};
     transition: 0.2s;
 
@@ -239,6 +306,15 @@ const UserEventListText = styled(ListItemText)`
     }
   }
 `;
+
+const NoDataText = styled(UserEventListText)`
+  /* width: calc(100% - 40px); */
+  > span {
+    text-align: center;
+    padding: 20px 0px;
+  }
+`;
+
 const UserEventListIcon = styled(ListItemIcon)`
   width: ${(p) => `${p.width}%`};
   display: flex;

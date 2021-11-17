@@ -25,6 +25,9 @@ const SelectionFormWrapper = styled.div`
   > li {
     padding: 0px;
     color: #7a7a7a;
+    width: 100%;
+    word-break: break-all;
+    font-size: 10px;
   }
   .MuiInput-underline:after {
     border-bottom: 2px solid #2b8397 !important;
@@ -41,7 +44,7 @@ export const SelectForm = ({
 }) => {
   return (
     <SelectionFormWrapper>
-      <InputLabel>{label}</InputLabel>
+      <CustomInputLabel>{label}</CustomInputLabel>
       <Selects
         disabled={disabled}
         onChange={(e) => onChange(e)}
@@ -58,12 +61,25 @@ export const SelectForm = ({
   );
 };
 
+const CustomInputLabel = styled(InputLabel)`
+  width: 100%;
+  word-break: break-all;
+  font-size: 10px;
+`;
+
 const Input = styled(TextField)`
   margin: 10px 5% !important;
   width: ${(p) => `${p.width ? p.width : "90"}%`};
 
+  .MuiFormLabel-root {
+    width: 100%;
+    word-break: break-all;
+    font-size: 10px !important;
+  }
+
   .MuiFormControl-root {
-    margin: 10px 0px;
+    margin: 13px 0px;
+    width: 100%;
   }
 
   .MuiFormLabel-root.Mui-focused {

@@ -36,8 +36,9 @@ const openSignInPopup = () => {
 export const initClient = () => {
   window.gapi.client
     .init({
-      apiKey: process.env.REACT_APP_API_KEY,
-      clientId: process.env.REACT_APP_CLIENT_ID,
+      apiKey: "AIzaSyDHX65tNxZim7qUt9c7VdApQTmWyKdqMTE",
+      clientId:
+        "822554265897-2ef45hnmivcacqb4pkai9unaenbgmn3v.apps.googleusercontent.com",
       discoveryDocs: DISCOVERY_DOCS,
       scope: SCOPES,
     })

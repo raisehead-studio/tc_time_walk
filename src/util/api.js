@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const baseUrl =
-  "https://beans-tool-bi-test-deplyed-default-rtdb.firebaseio.com";
+const baseUrl = "https://tctimewalkadmin-default-rtdb.firebaseio.com/";
 
 const baseUrls = "https://fast-mountain-19267.herokuapp.com/";
 // const baseUrls =
@@ -88,6 +87,19 @@ export const handleSubmitEvent = (uid, data) => {
     });
 };
 
+export const handleFetchEvent = (uid) => {
+  return axios({
+    method: "get",
+    url: `${baseUrl}/registration/${uid}.json`,
+  })
+    .then((res) => {
+      return res;
+    })
+    .catch((err) => {
+      return "error";
+    });
+};
+
 export const handleFetchUserEventData = (uid) => {
   return axios({
     method: "get",
@@ -125,11 +137,17 @@ export const handleECPayment = (data) => {
     });
 };
 
-export const handleCreateEvent = (data) => {
+export const handleEmail = (data) => {
   return axios({
     method: "post",
-    url: `http://localhost:8000/api/v1/create_event`,
-    data: data,
+    url: `${baseUrls}api/v1/email`,
+    data: {
+      email_type: data.email_type,
+      from_email: "no-reply@tctimewalk.com",
+      to_email: data.to_email,
+      user_name: data.user_name,
+      event_id: data.event_id,
+    },
   })
     .then((res) => {
       return res;
@@ -138,6 +156,20 @@ export const handleCreateEvent = (data) => {
       return "error";
     });
 };
+
+// export const handleCreateEvent = (data) => {
+//   return axios({
+//     method: "post",
+//     url: `http://localhost:8000/api/v1/create_event`,
+//     data: data,
+//   })
+//     .then((res) => {
+//       return res;
+//     })
+//     .catch((err) => {
+//       return "error";
+//     });
+// };
 
 export const handleCheckIsAdmin = (uid) => {
   return axios({
@@ -177,4 +209,74 @@ export const handleGetRegistrationInfo = (uid) => {
     .catch((err) => {
       return "error";
     });
+};
+
+export const handleChangeIsPass = (params) => {
+  return axios({
+    method: "get",
+    url: `${baseUrl}/registration/${params.user_id}.json`,
+  }).then((res) => {
+    const { data } = res;
+    const event = Object.entries(data).filter(
+      (e) => e[1].eventId === params.event_id
+    );
+    const info = {
+      ...event[0][1],
+      isPass: params.is_pass,
+    };
+    return axios({
+      method: "put",
+      url: `${baseUrl}/registration/${params.user_id}/${event[0][0]}.json`,
+      data: info,
+    })
+      .then((res) => {
+        return axios({
+          method: "get",
+          url: `${baseUrl}/videoData/${params.event_id}/subscription.json`,
+          // data: info,
+        }).then((res) => {
+          const index = res.data.findIndex((e) => e.userId === params.user_id);
+          const info = {
+            ...res.data[index],
+            isPass: params.is_pass,
+          };
+          const update_data = [
+            ...res.data.slice(0, index),
+            info,
+            ...res.data.slice(index + 1),
+          ];
+          return axios({
+            method: "put",
+            url: `${baseUrl}/videoData/${params.event_id}/subscription.json`,
+            data: update_data,
+          });
+        });
+      })
+      .catch((err) => {
+        return "error";
+      });
+  });
+};
+
+export const handleDeleteEvent = (event_id) => {
+  return axios({
+    method: "get",
+    url: `${baseUrl}/videoData/${event_id}.json`,
+  }).then((res) => {
+    const { data } = res;
+    return axios({
+      method: "put",
+      url: `${baseUrl}/videoData/${event_id}.json`,
+      data: {
+        ...data,
+        isDel: true,
+      },
+    })
+      .then((res) => {
+        return res;
+      })
+      .catch((err) => {
+        return "error";
+      });
+  });
 };

@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "beans-tool-bi-test-deplyed",
+    "site": "tctimewalkadmin",
     "public": "build",
     "ignore": [
       "firebase.json",

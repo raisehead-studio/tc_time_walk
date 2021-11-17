@@ -18,6 +18,7 @@ import {
   handleFetchEventData,
   handleFetchEventDetail,
   handleUpdateEvent,
+  handleSendEmail,
 } from "../redux/events";
 import firebase from "../util/firebase";
 
@@ -42,6 +43,7 @@ const EventRegisterForm = (props) => {
     numOfParticipant: 1,
     email: "",
     tel: "",
+    cachedLanguage: "",
     language: "",
     sourcePresent: "",
     source: "",
@@ -64,7 +66,12 @@ const EventRegisterForm = (props) => {
   React.useEffect(() => {
     if (user) {
       const { displayName, email, uid } = user.multiFactor.user;
-      setState((state) => ({ ...state, name: displayName, email: email }));
+      setState((state) => ({
+        ...state,
+        name: displayName,
+        email: email,
+        uid: uid,
+      }));
     }
   }, [user]);
 
@@ -72,12 +79,22 @@ const EventRegisterForm = (props) => {
     if (Object.entries(events).length > 0) {
       const updateEventData = [];
 
-      Object.entries(events).forEach((event) => {
-        updateEventData.push({
-          id: event[0],
-          name: event[1].eventName + ` (${event[1].price}/人)`,
+      Object.entries(events)
+        .filter((i) => {
+          return i[1].isDel === false && i[1].endDate > new Date().getTime();
+        })
+        .forEach((event) => {
+          let name;
+          if (event[1].price === 0) {
+            name = "免費活動";
+          } else {
+            name = `${event[1].eventName} (${event[1].price}/人)`;
+          }
+          updateEventData.push({
+            id: event[0],
+            name: name,
+          });
         });
-      });
 
       setState((state) => ({ ...state, eventData: updateEventData }));
     }
@@ -131,6 +148,15 @@ const EventRegisterForm = (props) => {
   };
 
   const handleSubmit = () => {
+    let price;
+    if (state.numOfParticipant >= eventDetail.discount_amount) {
+      price =
+        state.numOfParticipant *
+        eventDetail.price *
+        (eventDetail.discount_rate * 0.1);
+    } else {
+      price = state.numOfParticipant * eventDetail.price;
+    }
     Swal.fire({
       html:
         "<div style='display: flex; flex-direction: column; align-items: flex-start; width: 80%; margin: 0px 10%'>" +
@@ -139,9 +165,7 @@ const EventRegisterForm = (props) => {
         `<p><strong style='font-weight: 600'>參加人數：</strong>${state.numOfParticipant}</p>` +
         `<p><strong style='font-weight: 600'>聯絡 email：</strong>${state.email}</p>` +
         `<p><strong style='font-weight: 600'>聯絡電話：</strong>${state.tel}</p>` +
-        `<p><strong style='font-weight: 600'>費用：${
-          state.numOfParticipant * eventDetail.price
-        }</strong></p>` +
+        `<p><strong style='font-weight: 600'>費用：${price}</strong></p>` +
         "</div>",
       showCancelButton: true,
       confirmButtonText: "確認報名",
@@ -158,6 +182,7 @@ const EventRegisterForm = (props) => {
           email,
           tel,
           language,
+          cachedLanguage,
           source,
           sourcePresent,
           isParticipated,
@@ -175,8 +200,11 @@ const EventRegisterForm = (props) => {
         updateSubscription.push({
           isPaid: false,
           email: email,
+          userId: uid,
           numOfParticipant: numOfParticipant,
           name: name,
+          eventId: eventId,
+          isPass: false,
         });
         const data = {
           ...events[eventId],
@@ -187,14 +215,36 @@ const EventRegisterForm = (props) => {
           numOfParticipant: numOfParticipant,
           email: email,
           tel: tel,
-          language: language,
+          language: language ? language : cachedLanguage,
           source: sourcePresent === "other" ? source : sourcePresent,
           isParticipated: isParticipated,
           suggestion: suggestion,
           subscription: updateSubscription,
           registeredTS: new Date().getTime(),
+          isPass: false,
+          discount_amount: eventDetail.discount_amount,
+          discount_rate: eventDetail.discount_rate,
         };
+
         dispatch(handleUpdateEvent({ uid: uid, data: data }));
+        dispatch(
+          handleSendEmail({
+            //寄給報名人
+            email_type: "1",
+            to_email: email,
+            user_name: name,
+            event_id: eventId,
+          })
+        );
+        dispatch(
+          //寄給 TC 團隊
+          handleSendEmail({
+            email_type: "2",
+            to_email: "karas.nov3@gmail.com",
+            user_name: "",
+            event_id: eventId,
+          })
+        );
         setTimeout(() => {
           if (!eventUpdatedLoading) {
             history.push(`/event_list/${uid}`);
@@ -220,70 +270,112 @@ const EventRegisterForm = (props) => {
   } else {
     return (
       <EventRegisterFormWrapper>
+        <EventRegisterMobileTextContainer>
+          <Text>想要客製化團體導覽嗎？（Want Customized tour）</Text>
+          <Text>
+            <span
+              onClick={() => {
+                window.open("https://forms.gle/sWdQsXTEQkMFFDEA7", "_blank");
+              }}
+            >
+              選我就對了!(Click me!)
+            </span>
+          </Text>
+        </EventRegisterMobileTextContainer>
         <EventRegisterCard>
           <EventRegisterTextContainer>
             <EventRegisterText>
-              報名{eventDetail ? eventDetail.videoName : ""}活動 :
+              報名{eventDetail ? eventDetail.videoName : ""}活動 (Make
+              Reservation):
             </EventRegisterText>
+            <TextContainer>
+              <Text>
+                想要客製化團體導覽嗎？（Want Customized tour）
+                <span
+                  onClick={() => {
+                    window.open(
+                      "https://forms.gle/sWdQsXTEQkMFFDEA7",
+                      "_blank"
+                    );
+                  }}
+                >
+                  選我就對了!(Click me!)
+                </span>
+              </Text>
+            </TextContainer>
           </EventRegisterTextContainer>
           <Inputs
-            label="姓名"
+            label="姓名(Name)"
             value={state.name}
             onChange={handleChange}
             name="name"
           />
           <SelectForm
-            label="預約行程"
+            label="預約行程(Want To Join?)"
             options={state.eventData}
             disabled={!eventDetail}
             value={state.eventId}
             onChange={handleSelectEvent}
             name="eventId"
           />
+          {eventDetail.summary && (
+            <EventRegisterFormEventCard>
+              <p>{eventDetail.summary}</p>
+            </EventRegisterFormEventCard>
+          )}
+
           <DateInputForm
-            label="行程日期"
+            label="行程日期(Date)"
             value={state.eventTs}
             onChange={handleChange}
             name="eventTs"
           />
           <Inputs
-            label="參加人數"
+            label="參加人數(How may people?)"
             value={state.numOfParticipant}
             onChange={handleChange}
             name="numOfParticipant"
             type="number"
           />
           <Inputs
-            label="電子信箱"
+            label="電子信箱(Email)"
             value={state.email}
             onChange={handleChange}
             name="email"
           />
           <Inputs
-            label="聯絡電話"
+            label="聯絡電話(Phone number or emergency)"
             value={state.tel}
             onChange={handleChange}
             name="tel"
           />
           <SelectForm
-            label="導覽語言中文/英文"
-            value={state.language}
+            label="導覽語言中文/英文(Language for tour)"
+            value={state.cachedLanguage}
             onChange={handleChange}
-            name="language"
+            name="cachedLanguage"
             options={[
-              { name: "英文", id: "english" },
-              { name: "中文", id: "chinese" },
+              { name: "英文(English)", id: "english" },
+              { name: "中文(Chinese)", id: "chinese" },
+              { name: "其他(Others)", id: "other" },
             ]}
           />
+          {state.cachedLanguage === "other" && (
+            <Inputs
+              value={state.language}
+              onChange={handleChange}
+              name="language"
+            />
+          )}
           <SelectForm
-            label="從哪裡得知活動訊息"
+            label="從哪裡得知活動訊息(Where to know the info)"
             value={state.sourcePresent}
             onChange={handleChange}
             name="sourcePresent"
             options={[
-              { name: "臉書", id: "facebook" },
-              { name: "IG", id: "instagram" },
-              { name: "其他", id: "other" },
+              { name: "臉書(Facebook)", id: "facebook" },
+              { name: "instagram", id: "instagram" },
+              { name: "其他(Others)", id: "other" },
             ]}
           />
           {state.isOpenSourceOther && (
@@ -295,13 +387,21 @@ const EventRegisterForm = (props) => {
             />
           )}
           <CheckboxForm
-            label="是否以前參加過TC活動"
+            label="是否以前參加過TC活動(Have you ever joined the activity before)"
             value={state.isParticipated}
             onChange={handleCheckboxChange}
             name="isParticipated"
             options={[
-              { name: "曾經參加過", id: "isParticipated", returnVal: true },
-              { name: "沒有參加過", id: "isNotParticipated", returnVal: false },
+              {
+                name: "曾經參加過(Yes)",
+                id: "isParticipated",
+                returnVal: true,
+              },
+              {
+                name: "沒有參加過(No)",
+                id: "isNotParticipated",
+                returnVal: false,
+              },
             ]}
           />
           {/* <Inputs
@@ -310,8 +410,9 @@ const EventRegisterForm = (props) => {
             onChange={handleChange}
             name="suggestion"
           /> */}
+
           <ButtonContainer>
-            <ButtonForm label="註冊活動" onClick={handleSubmit} />
+            <ButtonForm label="確認報名(Confirm)" onClick={handleSubmit} />
           </ButtonContainer>
         </EventRegisterCard>
       </EventRegisterFormWrapper>
@@ -324,17 +425,41 @@ const EventRegisterFormWrapper = styled.div`
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  width: 80%;
+  width: 100vw;
+  height: ${`${window.innerHeight - 50}px`};
+  padding-top: 50px;
 `;
 
 const EventRegisterCard = styled(Card)`
-  width: 100%;
+  width: 80%;
   background-color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  transform: translateY(70px);
+  display: block;
+  height: 80vh;
+  overflow-y: scroll !important;
+`;
+
+const EventRegisterFormEventCard = styled.div`
+  background-color: #ececec;
+  padding: 20px;
+  width: 90%;
+  margin: 10px 5%;
+  border-radius: 15px;
+
+  > p {
+    line-height: 20px;
+  }
+
+  @media (max-width: 750px) {
+    width: calc(100% - 40px);
+    margin: 0px;
+    /* margin: 10px 10%; */
+  }
+`;
+
+const DiscountText = styled.p`
+  font-size: 14px;
+  font-weight: 400;
+  padding: 10px 0px;
 `;
 
 const EventRegisterFormLoadingCard = styled(EventRegisterCard)`
@@ -344,13 +469,32 @@ const EventRegisterFormLoadingCard = styled(EventRegisterCard)`
 const EventRegisterTextContainer = styled.div`
   width: 100%;
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const EventRegisterMobileTextContainer = styled.div`
+  display: none;
+
+  @media (max-width: 750px) {
+    position: absolute;
+    top: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
 `;
 
 const EventRegisterText = styled.h2`
   font-size: 1.25rem;
   font-weight: 700;
   margin: 20px 5% 0px 5%;
+  width: 50%;
+
+  @media (max-width: 750px) {
+    font-size: 1rem;
+  }
 `;
 
 const ButtonContainer = styled.div`
@@ -360,6 +504,28 @@ const ButtonContainer = styled.div`
   justify-content: flex-start;
   align-items: center;
   padding: 10px;
+`;
+
+const TextContainer = styled.div`
+  margin: 10px 5% !important;
+  margin: 20px 5% 0px 5% !important;
+  width: 90%;
+
+  @media (max-width: 750px) {
+    display: none;
+  }
+`;
+
+const Text = styled.p`
+  font-size: 14px;
+  font-weight: 400;
+  text-align: right;
+
+  > span {
+    cursor: pointer;
+    color: #2b8397;
+    text-decoration: underline;
+  }
 `;
 
 export default withFirebaseAuth({

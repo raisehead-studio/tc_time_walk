@@ -4,8 +4,11 @@ import {
   handleFetchVideoData,
   handleFetchEventDataDetail,
   handleSubmitEvent,
+  handleFetchEvent,
   handleFetchUserEventData,
   handleUpdateEventSubscription,
+  handleEmail,
+  handleChangeIsPass,
 } from "../util/api";
 
 const initialState = {
@@ -17,7 +20,29 @@ const initialState = {
   eventUpdatedLoading: false,
   userEvents: [],
   userEventsLoading: false,
+  userDetail: {},
+  userDetailLoading: false,
+  sendEmailLoading: false,
+  changeIsPassLoading: false,
 };
+
+export const handleChangeEventIsPass = createAsyncThunk(
+  "event/handleChangeEventIsPass",
+  async (params) => {
+    const res = await handleChangeIsPass(params);
+    return res.data ? res.data : {};
+  }
+);
+
+export const handleSendEmail = createAsyncThunk(
+  "event/handleSendEmail",
+  async (params) => {
+    console.log(params);
+
+    const res = await handleEmail(params);
+    return res.data ? res.data : {};
+  }
+);
 
 export const handleFetchUserData = createAsyncThunk(
   "event/handleFetchUserData",
@@ -39,7 +64,21 @@ export const handleFetchEventDetail = createAsyncThunk(
   "event/handleFetchEventDataDetail",
   async (id) => {
     const res = await handleFetchEventDataDetail(id);
+    console.log(res);
     return res.data ? res.data : {};
+  }
+);
+
+export const handleFetchUserDetail = createAsyncThunk(
+  "event/handleFetchUserDetail",
+  async (params) => {
+    const res = await handleFetchEvent(params.id);
+
+    const data = Object.values(res.data).filter(
+      (e) => e.eventId === params.event_id
+    )[0];
+
+    return data || {};
   }
 );
 
@@ -104,6 +143,25 @@ export const appSlice = createSlice({
       state.userEvents = updateUserEvent.sort(
         (a, b) => b.startDate - a.startDate
       );
+    });
+    builder.addCase(handleFetchUserDetail.pending, (state) => {
+      state.userDetailLoading = true;
+    });
+    builder.addCase(handleFetchUserDetail.fulfilled, (state, action) => {
+      state.userDetailLoading = false;
+      state.userDetail = action.payload;
+    });
+    builder.addCase(handleSendEmail.pending, (state) => {
+      state.sendEmailLoading = true;
+    });
+    builder.addCase(handleSendEmail.fulfilled, (state, action) => {
+      state.sendEmailLoading = false;
+    });
+    builder.addCase(handleChangeEventIsPass.pending, (state) => {
+      state.changeIsPassLoading = true;
+    });
+    builder.addCase(handleChangeEventIsPass.fulfilled, (state, action) => {
+      state.changeIsPassLoading = false;
     });
   },
 });

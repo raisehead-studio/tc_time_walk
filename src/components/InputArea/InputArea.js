@@ -6,6 +6,7 @@ import Button from "@material-ui/core/Button";
 import { DateTimePicker } from "@material-ui/pickers";
 
 import { initClient, handleCreateEvents } from "../../util/create_event";
+// import {  }
 import { handleUpdateData, handleFetchData } from "../../util/api";
 import {
   SelectForm,
@@ -14,16 +15,19 @@ import {
   DateInputForm,
   ButtonForm,
 } from "../../styles/index";
+import { startAfter } from "@firebase/firestore";
 
 const InputArea = ({ handleGetData }) => {
   const [state, setState] = React.useState({
     eventName: "",
     eventLink: "",
     description: "",
-    price: "",
+    price: 0,
     startDate: new Date().getTime(),
     endDate: new Date().getTime(),
     event: null,
+    discount_amount: 0,
+    discount_rate: 0,
   });
 
   React.useEffect(() => {
@@ -76,15 +80,16 @@ const InputArea = ({ handleGetData }) => {
       summary: state.description,
       subscription: [""],
       price: +state.price,
+      discount_amount: state.discount_amount,
+      discount_rate: state.discount_rate,
+      isDel: false,
     };
     setState((state) => ({ ...state, isLoading: true }));
     handleUpdateData(data).then((res) => {
       const eventData = {
         summary: state.eventName,
         location: "",
-        description:
-          state.description +
-          `http://localhost:3000/event_signup/${res.data.name}`,
+        description: state.description,
         start: {
           dateTime: formatDateString(state.startDate),
           timeZone: "Asia/Taipei",
@@ -98,6 +103,8 @@ const InputArea = ({ handleGetData }) => {
         reminders: {
           useDefault: true,
         },
+        discount_amount: state.discount_amount,
+        discount_rate: state.discount_rate,
       };
       handleCreateEvents(eventData);
       setState((state) => ({
@@ -129,7 +136,7 @@ const InputArea = ({ handleGetData }) => {
           name="eventName"
         />
         <Inputs
-          label="活動連結"
+          label="活動連結（未填寫則為實體活動）"
           value={state.eventLink}
           onChange={handleChange}
           width={50}
@@ -154,20 +161,41 @@ const InputArea = ({ handleGetData }) => {
           name={"startDate"}
         />
         <DateInputs
-          label="活動開始時間"
+          label="活動結束時間"
           value={state.endDate}
           onChange={(val) => handleDateChange(val, "endDate")}
           width={33}
           name={"endDate"}
         />
         <Inputs
-          label="報名活動價錢"
+          label="報名活動價錢（未填寫則為免費活動）"
           value={state.price}
           onChange={handleChange}
           width={33}
           name="price"
           type="number"
         />
+      </InputAreaWrapperCol>
+      <Divider />
+      <InputAreaWrapperCol>
+        <Inputs
+          label="活動優惠張數"
+          value={state.discount_amount}
+          onChange={handleChange}
+          width={33}
+          name="discount_amount"
+          type="number"
+        />
+        {state.discount_amount > 0 && (
+          <Inputs
+            label="優惠折數(8折請輸入80)"
+            value={state.discount_rate}
+            onChange={handleChange}
+            width={33}
+            name="discount_rate"
+            type="number"
+          />
+        )}
       </InputAreaWrapperCol>
       <ButtonsContainer>
         <Buttons
@@ -187,6 +215,11 @@ const InputArea = ({ handleGetData }) => {
     </InputAreaWrapper>
   );
 };
+
+const Divider = styled.div`
+  width: 100%;
+  border-top: 0.5px solid #ececec;
+`;
 
 const InputAreaWrapper = styled(Card)`
   display: flex;

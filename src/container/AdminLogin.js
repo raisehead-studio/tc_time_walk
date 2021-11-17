@@ -21,22 +21,30 @@ const AdminLogin = (props) => {
   const handleSignIn = () => {
     signInWithGoogle().then((res) => {
       const { email } = res.user.multiFactor.user;
-      let checkEmail;
-      if (email.split("@")[0].indexOf(".") > 0) {
-        checkEmail = email.split("@")[0].split(".")[0];
-      } else {
-        checkEmail = email.split("@")[0];
-      }
 
-      handleCheckIsAdmin(checkEmail).then((res) => {
-        if (res.data) {
-          history.push("/");
+      console.log(email);
+
+      if (email === "tctimewalk3.0@gmail.com") {
+        history.push("/");
+      } else {
+        let checkEmail;
+
+        if (email.split("@")[0].indexOf(".") > 0) {
+          checkEmail = email.split("@")[0].split(".")[0];
         } else {
-          Swal.fire("無管理者權限。");
-          signOut();
-          history.push("/");
+          checkEmail = email.split("@")[0];
         }
-      });
+
+        handleCheckIsAdmin(checkEmail).then((res) => {
+          if (res.data) {
+            history.push("/");
+          } else {
+            Swal.fire("無管理者權限。");
+            signOut();
+            history.push("/");
+          }
+        });
+      }
     });
   };
 

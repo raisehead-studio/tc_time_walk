@@ -25,7 +25,7 @@ const LoginRequired = (props) => {
     if (user) {
       const { email } = user.multiFactor.user;
       handleCheckIsAdmin(email.split("@")[0]).then((res) => {
-        if (res.data) {
+        if (res.data || email === "tctimewalk3.0@gmail.com") {
           dispatch(handleIsAdmin(true));
         } else {
           dispatch(handleIsAdmin(false));
@@ -57,6 +57,11 @@ const SingInWrapper = styled.div`
   display: flex;
   justify-content: center;
   transform: translateY(70px);
+
+  @media (max-width: 750px) {
+    width: 80%;
+  }
+
   /* align-items: center; */
 `;
 

@@ -464,6 +464,9 @@ const DiscountText = styled.p`
 
 const EventRegisterFormLoadingCard = styled(EventRegisterCard)`
   height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const EventRegisterTextContainer = styled.div`

@@ -162,7 +162,7 @@ const VideoList = ({
             isheader={true}
             width={window.innerWidth > 750 ? 30 : 35}
           >
-            影片名稱
+            活動名稱
           </VideoListText>
           <VideoListText isheader={true} width={40}>
             活動時間
@@ -539,10 +539,10 @@ const VideoListWrapper = styled(Card)`
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: auto;
-  max-height: 80vh;
+  height: 32vh;
+  padding-top: 60px;
   overflow-y: scroll !important;
-  transform: translateY(100px);
+  transform: translateY(80px);
 `;
 
 const VideoContentContainer = styled.div`

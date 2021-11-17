@@ -172,12 +172,17 @@ const DateInput = styled(TextField)`
 
 export const DateInputs = (props) => <DateInput {...props} />;
 
-export const ButtonForm = ({ onClick, label }) => {
-  return <Buttons onClick={onClick}>{label}</Buttons>;
+export const ButtonForm = ({ onClick, label, active }) => {
+  return (
+    <Buttons active={active} onClick={onClick}>
+      {label}
+    </Buttons>
+  );
 };
 
 const Buttons = styled(Button)`
-  background-color: #2b8397 !important;
+  background-color: ${(p) => (p.active ? "#2b8397" : "#ececec")} !important;
   color: #fff !important;
   padding: 10px !important;
+  cursor: ${(p) => (p.active ? "pointer" : "not-allowed")} !important;
 `;

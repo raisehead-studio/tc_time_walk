@@ -50,7 +50,38 @@ const EventRegisterForm = (props) => {
     isParticipated: false,
     suggestion: "",
     isOpenSourceOther: false,
+    active: false,
   });
+
+  console.log(state);
+
+  React.useEffect(() => {
+    if (
+      !state.name ||
+      !state.eventId ||
+      !state.eventTs ||
+      !state.email ||
+      !state.tel ||
+      (!state.language && !state.cachedLanguage) ||
+      (!state.source && !state.sourcePresent) ||
+      state.numOfParticipant <= 0
+    ) {
+      setState((state) => ({ ...state, active: false }));
+    } else {
+      setState((state) => ({ ...state, active: true }));
+    }
+  }, [
+    state.name,
+    state.eventId,
+    state.eventTs,
+    state.numOfParticipant,
+    state.email,
+    state.tel,
+    state.language,
+    state.source,
+    state.cachedLanguage,
+    state.sourcePresent,
+  ]);
 
   React.useEffect(() => {
     dispatch(handleFetchEventData());
@@ -412,7 +443,11 @@ const EventRegisterForm = (props) => {
           /> */}
 
           <ButtonContainer>
-            <ButtonForm label="確認報名(Confirm)" onClick={handleSubmit} />
+            <ButtonForm
+              active={state.active}
+              label="確認報名(Confirm)"
+              onClick={state.active ? handleSubmit : () => {}}
+            />
           </ButtonContainer>
         </EventRegisterCard>
       </EventRegisterFormWrapper>

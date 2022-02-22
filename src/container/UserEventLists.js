@@ -162,7 +162,7 @@ const UserEventLists = (props) => {
                         <MonetizationOn
                           onClick={() => handlePurchase(event.id)}
                         />
-                        <p>未付款</p>
+                        <p>點我付款</p>
                       </React.Fragment>
                     );
                   }
@@ -210,7 +210,7 @@ const UserEventLists = (props) => {
                         : "實體活動"}
                     </UserEventListText>
                     <UserEventListText width={5}>
-                      {event.price === 0 ? "免費活動" : event.price}
+                      {event.price}
                     </UserEventListText>
                     <UserEventListIcon width={15}>
                       {payment_status}

@@ -20,6 +20,7 @@ import {
   handleUpdateEvent,
   handleSendEmail,
 } from "../redux/events";
+import { handleSubmitEvent, handleUpdateEventSubscription } from "../util/api";
 import firebase from "../util/firebase";
 
 const firebaseAppAuth = firebase.auth();
@@ -52,8 +53,6 @@ const EventRegisterForm = (props) => {
     isOpenSourceOther: false,
     active: false,
   });
-
-  console.log(state);
 
   React.useEffect(() => {
     if (
@@ -107,23 +106,20 @@ const EventRegisterForm = (props) => {
   }, [user]);
 
   React.useEffect(() => {
+    console.log(events);
+
     if (Object.entries(events).length > 0) {
       const updateEventData = [];
 
       Object.entries(events)
+        .sort((a, b) => a[1].startDate - b[1].startDate)
         .filter((i) => {
           return i[1].isDel === false && i[1].endDate > new Date().getTime();
         })
         .forEach((event) => {
-          let name;
-          if (event[1].price === 0) {
-            name = "免費活動";
-          } else {
-            name = `${event[1].eventName} (${event[1].price}/人)`;
-          }
           updateEventData.push({
             id: event[0],
-            name: name,
+            name: `${event[1].eventName} (${event[1].price}/人)`,
           });
         });
 
@@ -180,14 +176,19 @@ const EventRegisterForm = (props) => {
 
   const handleSubmit = () => {
     let price;
-    if (state.numOfParticipant >= eventDetail.discount_amount) {
-      price =
+    if (
+      state.numOfParticipant >= eventDetail.discount_amount &&
+      eventDetail.discount_amount !== 0
+    ) {
+      price = Math.floor(
         state.numOfParticipant *
-        eventDetail.price *
-        (eventDetail.discount_rate * 0.1);
+          eventDetail.price *
+          (eventDetail.discount_rate * 0.01)
+      );
     } else {
       price = state.numOfParticipant * eventDetail.price;
     }
+
     Swal.fire({
       html:
         "<div style='display: flex; flex-direction: column; align-items: flex-start; width: 80%; margin: 0px 10%'>" +
@@ -220,23 +221,7 @@ const EventRegisterForm = (props) => {
           suggestion,
           subscription,
         } = state;
-        const updateSubscription = [];
-        if (Array.isArray(subscription)) {
-          subscription.forEach((i) => updateSubscription.push(i));
-        } else {
-          Object.values(subscription).forEach((i) =>
-            updateSubscription.push(i)
-          );
-        }
-        updateSubscription.push({
-          isPaid: false,
-          email: email,
-          userId: uid,
-          numOfParticipant: numOfParticipant,
-          name: name,
-          eventId: eventId,
-          isPass: false,
-        });
+
         const data = {
           ...events[eventId],
           isPaid: false,
@@ -250,37 +235,63 @@ const EventRegisterForm = (props) => {
           source: sourcePresent === "other" ? source : sourcePresent,
           isParticipated: isParticipated,
           suggestion: suggestion,
-          subscription: updateSubscription,
+          // subscription: updateSubscription,
           registeredTS: new Date().getTime(),
           isPass: false,
+          isTouched: false,
           discount_amount: eventDetail.discount_amount,
           discount_rate: eventDetail.discount_rate,
         };
 
-        dispatch(handleUpdateEvent({ uid: uid, data: data }));
-        dispatch(
-          handleSendEmail({
-            //寄給報名人
-            email_type: "1",
-            to_email: email,
-            user_name: name,
-            event_id: eventId,
-          })
-        );
-        dispatch(
-          //寄給 TC 團隊
-          handleSendEmail({
-            email_type: "2",
-            to_email: "karas.nov3@gmail.com",
-            user_name: "",
-            event_id: eventId,
-          })
-        );
-        setTimeout(() => {
-          if (!eventUpdatedLoading) {
-            history.push(`/event_list/${uid}`);
+        handleSubmitEvent({ uid: uid, data: data }).then((res) => {
+          const subId = res.data.name;
+          const updateSubscription = [];
+          if (Array.isArray(subscription)) {
+            subscription.forEach((i) => updateSubscription.push(i));
+          } else {
+            Object.values(subscription).forEach((i) =>
+              updateSubscription.push(i)
+            );
           }
-        }, 2000);
+          updateSubscription.push({
+            subId: subId,
+            isPaid: false,
+            email: email,
+            userId: uid,
+            numOfParticipant: numOfParticipant,
+            name: name,
+            eventId: eventId,
+            isPass: false,
+            isTouched: false,
+          });
+          handleUpdateEventSubscription(eventId, updateSubscription).then(
+            (res) => {
+              dispatch(
+                handleSendEmail({
+                  //寄給報名人
+                  email_type: "1",
+                  to_email: email,
+                  user_name: name,
+                  event_id: eventId,
+                })
+              );
+              dispatch(
+                //寄給 TC 團隊
+                handleSendEmail({
+                  email_type: "2",
+                  to_email: "tctimewalk3.0@gmail.com",
+                  user_name: name,
+                  event_id: eventId,
+                })
+              );
+              setTimeout(() => {
+                if (!eventUpdatedLoading) {
+                  history.push(`/event_list/${uid}`);
+                }
+              }, 2000);
+            }
+          );
+        });
       }
     });
   };
@@ -302,7 +313,8 @@ const EventRegisterForm = (props) => {
     return (
       <EventRegisterFormWrapper>
         <EventRegisterMobileTextContainer>
-          <Text>想要客製化團體導覽嗎？（Want Customized tour）</Text>
+          <Text>想要預約小費/客製化導覽嗎？</Text>
+          <Text>（Tips-based / Customized tour）</Text>
           <Text>
             <span
               onClick={() => {
@@ -321,7 +333,9 @@ const EventRegisterForm = (props) => {
             </EventRegisterText>
             <TextContainer>
               <Text>
-                想要客製化團體導覽嗎？（Want Customized tour）
+                想要預約小費/客製化導覽嗎？（Tips-based / Customized tour）
+              </Text>
+              <Text>
                 <span
                   onClick={() => {
                     window.open(
@@ -461,16 +475,33 @@ const EventRegisterFormWrapper = styled.div`
   justify-content: center;
   flex-direction: column;
   width: 100vw;
-  height: ${`${window.innerHeight - 50}px`};
-  padding-top: 50px;
+  padding: 50px 0px;
+  overflow-y: hidden;
+  transform: translateY(50px);
+  background-image: linear-gradient(
+    135deg,
+    rgba(43, 131, 151, 0.2) 0%,
+    rgba(248, 225, 128, 0.2) 100%
+  );
+  @media (max-width: 460px) {
+    padding: 10px 0px 50px 0px;
+
+    /* transform: translateY(70px); */
+  }
 `;
 
 const EventRegisterCard = styled(Card)`
   width: 80%;
   background-color: #fff;
   display: block;
-  height: 80vh;
+  /* height: 77vh; */
+  margin-top: 0px;
   overflow-y: scroll !important;
+
+  @media (max-width: 460px) {
+    width: 90%;
+    /* transform: translateY(70px); */
+  }
 `;
 
 const EventRegisterFormEventCard = styled.div`
@@ -514,13 +545,14 @@ const EventRegisterTextContainer = styled.div`
 const EventRegisterMobileTextContainer = styled.div`
   display: none;
 
-  @media (max-width: 750px) {
-    position: absolute;
-    top: 60px;
+  @media (max-width: 450px) {
+    /* position: absolute; */
+    /* top: 60px; */
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
+    padding: 15px 0px;
   }
 `;
 
@@ -547,7 +579,9 @@ const ButtonContainer = styled.div`
 const TextContainer = styled.div`
   margin: 10px 5% !important;
   margin: 20px 5% 0px 5% !important;
-  width: 90%;
+  overflow: visible;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   @media (max-width: 750px) {
     display: none;

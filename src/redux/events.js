@@ -72,13 +72,11 @@ export const handleFetchEventDetail = createAsyncThunk(
 export const handleFetchUserDetail = createAsyncThunk(
   "event/handleFetchUserDetail",
   async (params) => {
-    const res = await handleFetchEvent(params.id);
+    const res = await handleFetchEvent(params.id, params.sub_id);
 
-    const data = Object.values(res.data).filter(
-      (e) => e.eventId === params.event_id
-    )[0];
+    console.log(res);
 
-    return data || {};
+    return res.data || {};
   }
 );
 
@@ -86,13 +84,15 @@ export const handleUpdateEvent = createAsyncThunk(
   "event/handleUpdateEvent",
   async (data) => {
     const res = await handleSubmitEvent(data.uid, data.data);
-    if (res.data) {
-      const res = await handleUpdateEventSubscription(
-        data.data.eventId,
-        data.data.subscription
-      );
-      return res.data;
-    }
+
+    return res;
+    // if (res.data) {
+    //   const res = await handleUpdateEventSubscription(
+    //     data.data.eventId,
+    //     data.data.subscription
+    //   );
+    //   return res.data;
+    // }
   }
 );
 

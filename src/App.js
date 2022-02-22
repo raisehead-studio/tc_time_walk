@@ -56,6 +56,10 @@ const AppWrapper = styled.div`
     rgba(248, 225, 128, 0.2) 100%
   );
   height: 100vh;
+
+  @media (max-width: 450px) {
+    overflow-y: scroll;
+  }
 `;
 
 export default withFirebaseAuth({

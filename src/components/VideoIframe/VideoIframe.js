@@ -15,6 +15,7 @@ const VideoIframe = ({
   eventId,
 }) => {
   const current = new Date().getTime();
+
   if (loading) {
     return <Spinner />;
   } else {
@@ -22,12 +23,20 @@ const VideoIframe = ({
       // if (true) {
       return (
         <React.Fragment>
-          <Chatroom eventId={eventId} />
           <VideoListWrapper>
             <Iframe
-              src={`https://www.youtube.com/embed/${
-                videoLink.split("v=")[videoLink.split("v=").length - 1]
-              }`}
+              isVideo
+              src={`https://www.youtube.com/embed/${videoLink.split("/")[3]}`}
+              title="YouTube video player"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            />
+            <Iframe
+              isChatroom
+              src={`https://www.youtube.com/live_chat?v=${
+                videoLink.split("/")[3]
+              }&embed_domain=tctimewalkadmin.web.app`}
               title="YouTube video player"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -38,7 +47,7 @@ const VideoIframe = ({
       );
     } else {
       return (
-        <VideoListWrapper>
+        <VideoListWrapper no_start>
           <NotStartedText>活動尚未開始</NotStartedText>
         </VideoListWrapper>
       );
@@ -49,21 +58,23 @@ const VideoIframe = ({
 const VideoListWrapper = styled(Card)`
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 90vh;
-  transform: translateY(70px);
-  @media (max-height: 500px) {
-    transform: translateY(55px);
-    height: calc(100vh - 55px);
+  justify-content: ${(p) => (p.no_start ? "center" : "stretch")};
+  width: 100vw;
+  height: calc(100vh - 50px);
+  transform: translateY(50px);
+
+  @media (max-width: 460px) {
+    flex-direction: column;
+    height: calc(100vh - 120px);
   }
 `;
 
 const Iframe = styled.iframe`
-  width: 100%;
-  height: 100vh;
-  @media (max-height: 500px) {
-    height: calc(100vh - 55px);
+  width: ${(p) => (p.isChatroom ? "30%" : "70%")};
+  height: calc(100vh - 50px);
+  @media (max-width: 460px) {
+    width: 100%;
+    height: ${(p) => p.isChatroom};
   }
 `;
 

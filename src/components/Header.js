@@ -296,7 +296,7 @@ const MobileMenuText = styled.p`
 const HeaderMobileRightContainer = styled.div`
   display: none;
 
-  @media (max-width: 750px) {
+  @media (max-width: 960px) {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -370,7 +370,7 @@ const HeaderContainerRight = styled.div`
   align-items: center;
   visibility: ${(p) => (p.isAdmin ? "hidden" : "")};
 
-  @media (max-width: 750px) {
+  @media (max-width: 960px) {
     display: none;
   }
 `;

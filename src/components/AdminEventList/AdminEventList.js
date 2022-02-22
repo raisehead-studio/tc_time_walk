@@ -31,6 +31,7 @@ import { db } from "../../util/firebase";
 import {
   handleFetchUserDetail,
   handleChangeEventIsPass,
+  handleSendEmail,
 } from "../../redux/events";
 
 import Spinner from "../Spinner/Spinner";
@@ -104,13 +105,18 @@ const VideoList = ({
     setState((state) => ({ ...state, modalDisplayControl: num }));
   };
 
-  const handleFetchUserInfo = async (id, event_id) => {
+  const handleFetchUserInfo = async (id, event_id, sub_id) => {
     const params = {
       id,
       event_id,
+      sub_id,
     };
 
-    await setState((state) => ({ ...state, selected_user_id: id }));
+    await setState((state) => ({
+      ...state,
+      selected_user_id: id,
+      sub_id: sub_id,
+    }));
     await dispatch(handleFetchUserDetail(params));
     handleModalDisplay(1);
   };
@@ -121,7 +127,6 @@ const VideoList = ({
       modalDisplayControl: 0,
       isModalOpen: false,
     }));
-    handleGetData();
   };
 
   const handleDisplayDateAndTime = (date) => {
@@ -152,6 +157,8 @@ const VideoList = ({
               is_free={state.is_free}
               handleModalDisplay={handleModalDisplay}
               handleCloseModal={handleCloseModal}
+              handleGetData={handleGetData}
+              sub_id={state.sub_id}
             />
           )}
         </InfoContainer>
@@ -182,60 +189,62 @@ const VideoList = ({
           )}
         </VideoListItem>
         <VideoContentContainer>
-          {state.memoedVideoList.map((row) => {
-            const startDate = new Date(+row.startDate);
-            const endDate = new Date(+row.endDate);
+          {state.memoedVideoList
+            .sort((a, b) => a.startDate - b.startDate)
+            .map((row) => {
+              const startDate = new Date(+row.startDate);
+              const endDate = new Date(+row.endDate);
 
-            const handleDisplayDate = (date) => {
-              return `${date.getFullYear()}/${
-                date.getMonth() + 1
-              }/${date.getDate()}`;
-            };
+              const handleDisplayDate = (date) => {
+                return `${date.getFullYear()}/${
+                  date.getMonth() + 1
+                }/${date.getDate()}`;
+              };
 
-            return (
-              <VideoListItem
-                key={row.id}
-                onClick={
-                  window.innerWidth > 750
-                    ? () => {}
-                    : () => handleOpenModal(row.id, row.price)
-                }
-              >
-                <VideoListText width={window.innerWidth > 750 ? 30 : 40}>
-                  {row.eventName}
-                </VideoListText>
-                <VideoListText width={40}>{`${handleDisplayDateAndTime(
-                  startDate
-                )} ~ ${handleDisplayDateAndTime(endDate)}`}</VideoListText>
-                {row.eventLink ? (
-                  <VideoListIcon
-                    onClick={() => handleOpenVideoPage(row.id)}
-                    width={10}
-                  >
-                    <LinkIcon />
-                  </VideoListIcon>
-                ) : (
-                  <VideoListText width={10}>實體活動</VideoListText>
-                )}
-                {window.innerWidth > 750 && (
-                  <React.Fragment>
+              return (
+                <VideoListItem
+                  key={row.id}
+                  onClick={
+                    window.innerWidth > 750
+                      ? () => {}
+                      : () => handleOpenModal(row.id, row.price)
+                  }
+                >
+                  <VideoListText width={window.innerWidth > 750 ? 30 : 40}>
+                    {row.eventName}
+                  </VideoListText>
+                  <VideoListText width={40}>{`${handleDisplayDateAndTime(
+                    startDate
+                  )} ~ ${handleDisplayDateAndTime(endDate)}`}</VideoListText>
+                  {row.eventLink ? (
                     <VideoListIcon
-                      onClick={() => handleOpenModal(row.id, row.price)}
+                      onClick={() => handleOpenVideoPage(row.id)}
                       width={10}
                     >
-                      <Info />
+                      <LinkIcon />
                     </VideoListIcon>
-                    <VideoListIcon
-                      onClick={() => handleDelEvent(row.eventName, row.id)}
-                      width={10}
-                    >
-                      <Delete />
-                    </VideoListIcon>
-                  </React.Fragment>
-                )}
-              </VideoListItem>
-            );
-          })}
+                  ) : (
+                    <VideoListText width={10}>實體活動</VideoListText>
+                  )}
+                  {window.innerWidth > 750 && (
+                    <React.Fragment>
+                      <VideoListIcon
+                        onClick={() => handleOpenModal(row.id, row.price)}
+                        width={10}
+                      >
+                        <Info />
+                      </VideoListIcon>
+                      <VideoListIcon
+                        onClick={() => handleDelEvent(row.eventName, row.id)}
+                        width={10}
+                      >
+                        <Delete />
+                      </VideoListIcon>
+                    </React.Fragment>
+                  )}
+                </VideoListItem>
+              );
+            })}
         </VideoContentContainer>
       </VideoLists>
     </VideoListWrapper>
@@ -287,15 +296,19 @@ const BriefInfo = ({ dataList, infoId, handleFetchUserInfo }) => {
       .filter((event) => event.id === infoId)[0]
       .subscription.slice(1)
       .forEach((e) => {
-        update_data.push({
-          name: e.name,
-          email: e.email,
-          is_passed: e.isPass ? "通過審核" : "未通過審核",
-          is_paid: e.isPaid ? "已付款" : "未付款",
-        });
+        if (e) {
+          update_data.push({
+            name: e.name,
+            email: e.email,
+            is_passed: e.isPass ? "通過審核" : "未通過審核",
+            is_paid: e.isPaid ? "已付款" : "點我付款",
+          });
+        }
       });
     setState((state) => ({ ...state, data_list: update_data }));
   }, [dataList, infoId]);
+
+  console.log(dataList);
 
   return (
     <React.Fragment>
@@ -335,26 +348,44 @@ const BriefInfo = ({ dataList, infoId, handleFetchUserInfo }) => {
       </VideoListItem>
       <VideoContentContainer>
         {dataList
-          .filter((event) => event.id === infoId)[0]
+          .filter((event) => event.id === infoId && event !== null)[0]
           .subscription.slice(1)
           .map((event) => {
+            let status;
+            if (!event.isTouched) {
+              status = "等待審核";
+            } else {
+              if (event.isPass) {
+                status = "通過";
+              } else {
+                status = "未通過";
+              }
+            }
+
             return (
               <VideoListItem key={event.name}>
                 <VideoListText
                   cursor
                   width={33}
                   onClick={() =>
-                    handleFetchUserInfo(event.userId, event.eventId)
+                    handleFetchUserInfo(
+                      event.userId,
+                      event.eventId,
+                      event.subId
+                    )
                   }
                 >
-                  {event.name}
+                  {event.name} (
+                  {event.subId?.substring(
+                    event.subId.length - 5,
+                    event.subId.length
+                  )}
+                  )
                 </VideoListText>
                 <VideoListText width={33}>
                   {event.numOfParticipant}
                 </VideoListText>
-                <VideoListText width={33}>
-                  {event.isPass ? "通過" : "未通過"}
-                </VideoListText>
+                <VideoListText width={33}>{status}</VideoListText>
                 <VideoListText width={33}>
                   {event.isPaid ? "已付款" : "未付款"}
                 </VideoListText>
@@ -371,11 +402,15 @@ const InfoDetail = ({
   handleModalDisplay,
   is_free,
   handleCloseModal,
+  handleGetData,
+  sub_id,
 }) => {
   const dispatch = useDispatch();
   const { userDetail, userDetailLoading } = useSelector(
     (state) => state.events
   );
+
+  console.log(userDetail);
 
   const [state, setState] = React.useState({
     isPass: false,
@@ -390,6 +425,17 @@ const InfoDetail = ({
     source = userDetail.source;
   }
 
+  let status;
+  if (!userDetail.isTouched) {
+    status = "等待審核";
+  } else {
+    if (userDetail.isPass) {
+      status = "通過審核";
+    } else {
+      status = "未通過審核";
+    }
+  }
+
   const date = new Date(userDetail.registeredTS);
 
   React.useEffect(() => {
@@ -400,14 +446,15 @@ const InfoDetail = ({
     setState((state) => ({ ...state, isPass: !state.isPass }));
   };
 
-  const handleChangePass = () => {
+  const handleChangePass = (pass) => {
     const params = {
       user_id: user_id,
       event_id: userDetail.eventId,
-      is_pass: state.isPass,
+      is_pass: pass,
+      sub_id: sub_id,
     };
     dispatch(handleChangeEventIsPass(params));
-    handleCloseModal();
+    // handleCloseModal();
   };
 
   const handleDisplayDateAndTime = (date) => {
@@ -421,10 +468,14 @@ const InfoDetail = ({
     }/${date.getDate()} ${formattedTime}  `;
   };
 
-  const handleNotifyUser = (type, email) => {
+  const handleNotifyUser = (pass, sub_id) => {
+    const { name } = userDetail;
+
     Swal.fire({
       html: `<div style="display:flex; justify-content: flex-start; text-align: center">
-          <p>確定寄信給使用者?</p>
+          <p>即將寄信給 ${name}，${
+        pass ? "確認審核通過嗎？" : "確認審核未通過嗎？"
+      }</p>
           </div>`,
       showCancelButton: true,
       confirmButtonText: "確認",
@@ -435,26 +486,32 @@ const InfoDetail = ({
         const { email, name, eventId } = userDetail;
         let type;
         if (is_free) {
-          if (state.isPass) {
+          if (pass) {
             type = 6;
           } else {
             type = 5;
           }
         } else {
-          if (state.isPass) {
+          if (pass) {
             type = 3;
           } else {
             type = 4;
           }
         }
-        // handleEmail({
-        //   email_type: type.toString(),
-        //   to_email: email,
-        //   user_name: name,
-        //   event_id: eventId,
-        // });
-
-        handleCloseModal();
+        handleChangePass(pass, sub_id);
+        setTimeout(() => {
+          handleGetData();
+          handleModalDisplay(0);
+        }, 1000);
+        dispatch(
+          handleSendEmail({
+            email_type: type.toString(),
+            to_email: email,
+            user_name: name,
+            event_id: eventId,
+          })
+        );
+        // handleCloseModal();
       }
     });
   };
@@ -473,7 +530,9 @@ const InfoDetail = ({
       <InfoDetailItemContainer>
         <InfoDetailItemInnerContainer width={100}>
           <InfoDetailItemName>
-            <p>{userDetail.name}</p>
+            <p>
+              {userDetail.name} <span> {status}</span>
+            </p>
           </InfoDetailItemName>
           <InfoDetailItemValue>
             <p>{userDetail.email}</p>
@@ -518,16 +577,19 @@ const InfoDetail = ({
           </InfoDetailItemValue>
         </InfoDetailItemInnerContainer>
       </InfoDetailItemContainer>
-      <InfoDetailItemContainer>
+      {/* <InfoDetailItemContainer>
         <SwitchContainer>
           <SwitchContainerText>是否通過審核</SwitchContainerText>
           <Switch checked={state.isPass} onClick={handleToggleIsPass} />
         </SwitchContainer>
-      </InfoDetailItemContainer>
+      </InfoDetailItemContainer> */}
       <InfoDetailItemContainer isBack>
         <ButtonContainer>
-          <Buttons onClick={handleNotifyUser}>寄信通知報名人</Buttons>
-          <Buttons onClick={handleChangePass}>確認修改審核</Buttons>
+          {/* <Buttons onClick={handleNotifyUser}>寄信通知報名人</Buttons> */}
+          <Buttons onClick={() => handleNotifyUser(true)}>確認審核通過</Buttons>
+          <Buttons onClick={() => handleNotifyUser(false)}>
+            確認審核未通過
+          </Buttons>
         </ButtonContainer>
       </InfoDetailItemContainer>
     </InfoDetailContainer>
@@ -650,6 +712,11 @@ const InfoDetailItemName = styled.div`
   > p {
     font-size: 35px;
     font-weight: 600;
+
+    > span {
+      font-size: 10px;
+      font-weight: 400;
+    }
   }
 `;
 

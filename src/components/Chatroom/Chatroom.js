@@ -111,45 +111,59 @@ const Chatroom = (props) => {
     }
   }, [state.messageList]);
 
+  // https: www.youtube.com/live_chat?v=<your video ID>&embed_domain=<your blog domain>
   return (
-    <ChatRoomsWrapper>
-      <MessageContainer ref={chatRef} isChatroomClose={state.isChatroomClose}>
-        {state.messageList.map((msg) => (
-          <MessageItem
-            isSelf={msg.uid === user.multiFactor.user.uid}
-            ref={chatRefItem}
-          >
-            <MessageIconContainer>
-              {msg.photoURL ? (
-                <MessageIcon src={msg.photoURL} alt={"photo"} />
-              ) : (
-                <AccountCircle />
-              )}
-            </MessageIconContainer>
-            <Message>{msg.message}</Message>
-          </MessageItem>
-        ))}
-      </MessageContainer>
-      <BottomContainer>
-        <InputContainer>
-          <Inputs
-            onKeyDown={(e) => keyPressUpdate(e)}
-            onChange={updateField}
-            name="message"
-            value={state.message}
-          />
-          <SendIcon onClick={handleSendMessage} />
-        </InputContainer>
-        <CollapseIconContainer>
-          {!state.isChatroomClose ? (
-            <ArrowDropDown onClick={handleToggleChatroom} />
-          ) : (
-            <ArrowDropUp onClick={handleToggleChatroom} />
-          )}
-        </CollapseIconContainer>
-      </BottomContainer>
-    </ChatRoomsWrapper>
+    <React.Fragment>
+      <Iframe
+        src={
+          "https: www.youtube.com/live_chat?v=naNxX0Xybxk&embed_domain=localhost"
+        }
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      />
+    </React.Fragment>
   );
+  // return (
+  //   <ChatRoomsWrapper>
+  //     <MessageContainer ref={chatRef} isChatroomClose={state.isChatroomClose}>
+  //       {state.messageList.map((msg) => (
+  //         <MessageItem
+  //           isSelf={msg.uid === user.multiFactor.user.uid}
+  //           ref={chatRefItem}
+  //         >
+  //           <MessageIconContainer>
+  //             {msg.photoURL ? (
+  //               <MessageIcon src={msg.photoURL} alt={"photo"} />
+  //             ) : (
+  //               <AccountCircle />
+  //             )}
+  //           </MessageIconContainer>
+  //           <Message>{msg.message}</Message>
+  //         </MessageItem>
+  //       ))}
+  //     </MessageContainer>
+  //     <BottomContainer>
+  //       <InputContainer>
+  //         <Inputs
+  //           onKeyDown={(e) => keyPressUpdate(e)}
+  //           onChange={updateField}
+  //           name="message"
+  //           value={state.message}
+  //         />
+  //         <SendIcon onClick={handleSendMessage} />
+  //       </InputContainer>
+  //       <CollapseIconContainer>
+  //         {!state.isChatroomClose ? (
+  //           <ArrowDropDown onClick={handleToggleChatroom} />
+  //         ) : (
+  //           <ArrowDropUp onClick={handleToggleChatroom} />
+  //         )}
+  //       </CollapseIconContainer>
+  //     </BottomContainer>
+  //   </ChatRoomsWrapper>
+  // );
 };
 
 const ChatRoomsWrapper = styled.div`
@@ -269,6 +283,14 @@ const BottomContainer = styled.div`
   width: 100%;
   display: flex;
   align-items: center;
+`;
+
+const Iframe = styled.iframe`
+  width: 100vw;
+  height: 100vh;
+  @media (max-height: 500px) {
+    height: calc(100vh - 55px);
+  }
 `;
 
 export default withFirebaseAuth({

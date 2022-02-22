@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
+import { useHistory } from "react-router";
 
 import Card from "@material-ui/core/Card";
 import MonetizationOn from "@material-ui/icons/MonetizationOn";
@@ -10,12 +11,16 @@ import Swal from "sweetalert2";
 // import Card from "@material-ui/core/Card";
 
 const UserEventCard = ({ event, uid }) => {
+  const history = useHistory();
   const { userEvents, userEventsLoading } = useSelector(
     (state) => state.events
   );
   let isExpired = false;
   let payment_status;
   const now = new Date().getTime();
+  const [state, setState] = React.useState({
+    isClickable: false,
+  });
 
   if (event.endDate < now || now < event.startDate) {
     isExpired = true;
@@ -26,18 +31,14 @@ const UserEventCard = ({ event, uid }) => {
       payment_status = <IsPardText>報名成功</IsPardText>;
     } else {
       payment_status = (
-        <React.Fragment>
+        <ClickToPay>
           <MonetizationOn onClick={() => handlePurchase(event.id)} />
-          <p>未付款</p>
-        </React.Fragment>
+          <p>點我付款</p>
+        </ClickToPay>
       );
     }
   } else {
-    payment_status = (
-      <React.Fragment>
-        <p>未通過審核</p>
-      </React.Fragment>
-    );
+    payment_status = <CustomCardRowText>未通過審核</CustomCardRowText>;
   }
 
   const handleDisplayDate = (date) => {
@@ -59,7 +60,10 @@ const UserEventCard = ({ event, uid }) => {
     const eventData = userEvents.filter((event) => event.id === id)[0];
 
     let price;
-    if (+eventData.numOfParticipant >= +eventData.discount_amount) {
+    if (
+      +eventData.numOfParticipant >= +eventData.discount_amount &&
+      eventData.discount_amount !== 0
+    ) {
       price =
         +eventData.numOfParticipant *
         +eventData.price *
@@ -67,6 +71,7 @@ const UserEventCard = ({ event, uid }) => {
     } else {
       price = +eventData.numOfParticipant * +eventData.price;
     }
+
     const data = {
       trade_name: eventData.eventName,
       trade_phone: eventData.tel,
@@ -77,6 +82,7 @@ const UserEventCard = ({ event, uid }) => {
       order_id: eventData.id,
       amount_price: price,
       user_id: uid,
+      sub_id: event.id,
     };
 
     handleECPayment(data).then((res) => {
@@ -95,7 +101,44 @@ const UserEventCard = ({ event, uid }) => {
     });
   };
 
-  console.log(event.registeredTS);
+  console.log(event);
+
+  const handleOpenVideoPage = (
+    id,
+    isExpired,
+    eventLink,
+    isPaid,
+    isPass,
+    price
+  ) => {
+    if (eventLink && !isExpired) {
+      if (price === 0) {
+        if (isPass) {
+          history.push(`/live-stream/${id}`);
+          setState((state) => ({ ...state, isClickable: true }));
+        }
+      } else {
+        if (isPaid) {
+          history.push(`/live-stream/${id}`);
+          setState((state) => ({ ...state, isClickable: true }));
+        }
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    if (event.eventLink) {
+      if (event.price === 0) {
+        if (event.isPass) {
+          setState((state) => ({ ...state, isClickable: true }));
+        }
+      } else {
+        if (event.isPaid) {
+          setState((state) => ({ ...state, isClickable: true }));
+        }
+      }
+    }
+  }, []);
 
   return (
     <CustomCard>
@@ -111,36 +154,56 @@ const UserEventCard = ({ event, uid }) => {
         </CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow>
-        <CustomCardRowTitle>參加人數(Attendance)</CustomCardRowTitle>
+        <CustomCardRowTitle>參加人數(Attendance) :</CustomCardRowTitle>
         <CustomCardRowText>{event.numOfParticipant}</CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow>
-        <CustomCardRowTitle>報名時間(RegDate)</CustomCardRowTitle>
+        <CustomCardRowTitle>報名時間(RegDate) :</CustomCardRowTitle>
         <CustomCardRowText>
           {handleDisplayDate(new Date(event.registeredTS))}
         </CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow>
-        <CustomCardRowTitle>影片連結(Video Link) :</CustomCardRowTitle>
-        <CustomCardRowText>
+        <CustomCardRowTitle>
+          線上活動連結（Online Travel Link):
+        </CustomCardRowTitle>
+        <CustomCardRowText
+          // onClick={
+          //   !event.isPaid
+          //     ? () => {}
+          //     : () =>
+          //         handleOpenVideoPage(event.eventId, isExpired, event.eventLink)
+          // }
+          clickable={state.isClickable}
+          onClick={() =>
+            handleOpenVideoPage(
+              event.eventId,
+              isExpired,
+              event.eventLink,
+              event.isPaid,
+              event.isPass,
+              event.price
+            )
+          }
+        >
           {!event.isPaid && event.price !== 0
             ? "於付款後開放連結"
             : isExpired
             ? "非活動期間"
-            : event.eventLink
-            ? "線上活動連結"
+            : "點此開啟活動畫面"
+            ? "開始活動請按這"
             : "實體活動"}
         </CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow>
         <CustomCardRowTitle>總價(Total Amount) :</CustomCardRowTitle>
         <CustomCardRowText>
-          {event.price === 0 ? "免費活動" : event.price}
+          {event.price * event.numOfParticipant}
         </CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow bottom>
         <CustomCardRowTitle>付款(Payment Status) :</CustomCardRowTitle>
-        <CustomCardRowText>{payment_status}</CustomCardRowText>
+        {payment_status}
       </CustomCardRow>
       <CustomCardMoreRow>
         <MoreText onClick={() => handleOpenDetail(event.id)}>活動內容</MoreText>
@@ -179,9 +242,22 @@ const CustomCardMoreRow = styled.div`
   border: none;
 `;
 
+const ClickToPay = styled.div`
+  display: flex;
+  width: 70%;
+  margin-right: 5%;
+  align-items: center;
+  color: #337cff;
+  cursor: pointer;
+  text-decoration: underline;
+  &:hover {
+    color: #3358ff;
+  }
+`;
+
 const CustomCardRowTitle = styled.p`
   font-weight: 600;
-  width: 20%;
+  width: 35%;
   margin-left: 5%;
   @media (max-width: 750px) {
     font-size: 12px;
@@ -193,6 +269,14 @@ const CustomCardRowTitle = styled.p`
 const CustomCardRowText = styled.p`
   width: 70%;
   margin-right: 5%;
+  color: ${(p) => p.clickable && "#337CFF"};
+  cursor: ${(p) => p.clickable && "pointer"};
+  text-decoration: ${(p) => p.clickable && "underline"};
+
+  &:hover {
+    color: ${(p) => p.clickable && "#3358FF"};
+  }
+
   @media (max-width: 750px) {
     font-size: 12px;
     width: 50%;
@@ -200,9 +284,11 @@ const CustomCardRowText = styled.p`
 `;
 
 const IsPardText = styled.p`
+  width: 70%;
+  margin-right: 5%;
   color: #32d608;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 16px;
 `;
 
 const MoreText = styled.p`

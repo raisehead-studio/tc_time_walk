@@ -2,7 +2,7 @@ import axios from "axios";
 
 const baseUrl = "https://tctimewalkadmin-default-rtdb.firebaseio.com/";
 
-const baseUrls = "https://fast-mountain-19267.herokuapp.com/";
+const baseUrls = "https://tctimewalk.herokuapp.com/";
 // const baseUrls =
 //   "https://1888-2001-b011-e60d-328c-75ba-ca4b-4fc3-44c6.ngrok.io";
 
@@ -73,10 +73,10 @@ export const handleFetchEventDataDetail = (id) => {
     });
 };
 
-export const handleSubmitEvent = (uid, data) => {
+export const handleSubmitEvent = ({ uid, data }) => {
   return axios({
     method: "post",
-    url: `${baseUrl}/registration/${uid}.json`,
+    url: `${baseUrl}registration/${uid}.json`,
     data: data,
   })
     .then((res) => {
@@ -87,10 +87,10 @@ export const handleSubmitEvent = (uid, data) => {
     });
 };
 
-export const handleFetchEvent = (uid) => {
+export const handleFetchEvent = (uid, subId) => {
   return axios({
     method: "get",
-    url: `${baseUrl}/registration/${uid}.json`,
+    url: `${baseUrl}/registration/${uid}/${subId}.json`,
   })
     .then((res) => {
       return res;
@@ -127,6 +127,7 @@ export const handleECPayment = (data) => {
       order_id: data.order_id,
       amount_price: data.amount_price,
       user_id: data.user_id,
+      sub_id: data.order_id,
     },
   })
     .then((res) => {
@@ -214,19 +215,18 @@ export const handleGetRegistrationInfo = (uid) => {
 export const handleChangeIsPass = (params) => {
   return axios({
     method: "get",
-    url: `${baseUrl}/registration/${params.user_id}.json`,
+    url: `${baseUrl}/registration/${params.user_id}/${params.sub_id}.json`,
   }).then((res) => {
     const { data } = res;
-    const event = Object.entries(data).filter(
-      (e) => e[1].eventId === params.event_id
-    );
+
     const info = {
-      ...event[0][1],
+      ...data,
       isPass: params.is_pass,
+      isTouched: true,
     };
     return axios({
       method: "put",
-      url: `${baseUrl}/registration/${params.user_id}/${event[0][0]}.json`,
+      url: `${baseUrl}/registration/${params.user_id}/${params.sub_id}.json`,
       data: info,
     })
       .then((res) => {
@@ -235,10 +235,13 @@ export const handleChangeIsPass = (params) => {
           url: `${baseUrl}/videoData/${params.event_id}/subscription.json`,
           // data: info,
         }).then((res) => {
-          const index = res.data.findIndex((e) => e.userId === params.user_id);
+          const index = res.data.findIndex(
+            (e) => e.userId === params.user_id && e.subId === params.sub_id
+          );
           const info = {
             ...res.data[index],
             isPass: params.is_pass,
+            isTouched: true,
           };
           const update_data = [
             ...res.data.slice(0, index),

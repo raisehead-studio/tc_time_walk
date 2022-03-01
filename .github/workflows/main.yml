@@ -4,14 +4,19 @@ on:
   push:
     branches: [master]
 jobs:
-  build:
+  build and deploy:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v1
       - name: 🚚  Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: "12.14.1"
+          node-version: "16.0.0"
+      - name: create .env
+        run: |
+          touch .env
+          echo REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} >> .env
+          echo REACT_APP_API_KEY=${{ secrets.REACT_APP_API_KEY }} >> .env
       - name: 🎉 npm install and build
         run: |
           npm install

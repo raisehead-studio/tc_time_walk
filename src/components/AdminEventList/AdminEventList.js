@@ -106,6 +106,8 @@ const VideoList = ({
   };
 
   const handleFetchUserInfo = async (id, event_id, sub_id) => {
+    console.log("I was called!");
+
     const params = {
       id,
       event_id,
@@ -484,6 +486,9 @@ const InfoDetail = ({
       const { value } = result;
       if (value) {
         const { email, name, eventId } = userDetail;
+
+        console.log(email);
+
         let type;
         if (is_free) {
           if (pass) {

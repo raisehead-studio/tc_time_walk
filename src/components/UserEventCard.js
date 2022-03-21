@@ -100,9 +100,6 @@ const UserEventCard = ({ event, uid }) => {
         </div>`,
     });
   };
-
-  console.log(event);
-
   const handleOpenVideoPage = (
     id,
     isExpired,

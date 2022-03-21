@@ -514,6 +514,7 @@ const InfoDetail = ({
             to_email: email,
             user_name: name,
             event_id: eventId,
+            subId: "",
           })
         );
         // handleCloseModal();

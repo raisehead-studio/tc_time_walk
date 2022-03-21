@@ -244,6 +244,8 @@ const EventRegisterForm = (props) => {
         };
 
         handleSubmitEvent({ uid: uid, data: data }).then((res) => {
+          console.log(res);
+
           const subId = res.data.name;
           const updateSubscription = [];
           if (Array.isArray(subscription)) {
@@ -273,6 +275,7 @@ const EventRegisterForm = (props) => {
                   to_email: email,
                   user_name: name,
                   event_id: eventId,
+                  subId: subId,
                 })
               );
               dispatch(
@@ -282,6 +285,7 @@ const EventRegisterForm = (props) => {
                   to_email: "tctimewalk3.0@gmail.com",
                   user_name: name,
                   event_id: eventId,
+                  subId: "",
                 })
               );
               setTimeout(() => {

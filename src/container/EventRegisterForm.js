@@ -182,8 +182,8 @@ const EventRegisterForm = (props) => {
     ) {
       price = Math.floor(
         state.numOfParticipant *
-        eventDetail.price *
-        (eventDetail.discount_rate * 0.01)
+          eventDetail.price *
+          (eventDetail.discount_rate * 0.01)
       );
     } else {
       price = +state.numOfParticipant * eventDetail.price;
@@ -279,7 +279,7 @@ const EventRegisterForm = (props) => {
                 //寄給 TC 團隊
                 handleSendEmail({
                   email_type: "2",
-                  to_email: "hinrick71@gmail.com",
+                  to_email: "tctimewalk3.0@gmail.com",
                   user_name: name,
                   event_id: eventId,
                 })
@@ -460,7 +460,7 @@ const EventRegisterForm = (props) => {
             <ButtonForm
               active={state.active}
               label="確認報名(Confirm)"
-              onClick={state.active ? handleSubmit : () => { }}
+              onClick={state.active ? handleSubmit : () => {}}
             />
           </ButtonContainer>
         </EventRegisterCard>

@@ -52,6 +52,8 @@ const EventRegisterForm = (props) => {
     suggestion: "",
     isOpenSourceOther: false,
     active: false,
+    discount_amount: 0,
+    discount_rate: 0,
   });
 
   React.useEffect(() => {
@@ -106,8 +108,6 @@ const EventRegisterForm = (props) => {
   }, [user]);
 
   React.useEffect(() => {
-    console.log(events);
-
     if (Object.entries(events).length > 0) {
       const updateEventData = [];
 
@@ -177,16 +177,16 @@ const EventRegisterForm = (props) => {
   const handleSubmit = () => {
     let price;
     if (
-      state.numOfParticipant >= eventDetail.discount_amount &&
-      eventDetail.discount_amount !== 0
+      state.numOfParticipant >= +eventDetail.discount_amount &&
+      +eventDetail.discount_amount !== 0
     ) {
       price = Math.floor(
         state.numOfParticipant *
-          eventDetail.price *
-          (eventDetail.discount_rate * 0.01)
+        eventDetail.price *
+        (eventDetail.discount_rate * 0.01)
       );
     } else {
-      price = state.numOfParticipant * eventDetail.price;
+      price = +state.numOfParticipant * eventDetail.price;
     }
 
     Swal.fire({
@@ -279,7 +279,7 @@ const EventRegisterForm = (props) => {
                 //寄給 TC 團隊
                 handleSendEmail({
                   email_type: "2",
-                  to_email: "tctimewalk3.0@gmail.com",
+                  to_email: "hinrick71@gmail.com",
                   user_name: name,
                   event_id: eventId,
                 })
@@ -460,7 +460,7 @@ const EventRegisterForm = (props) => {
             <ButtonForm
               active={state.active}
               label="確認報名(Confirm)"
-              onClick={state.active ? handleSubmit : () => {}}
+              onClick={state.active ? handleSubmit : () => { }}
             />
           </ButtonContainer>
         </EventRegisterCard>

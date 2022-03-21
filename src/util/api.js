@@ -148,6 +148,7 @@ export const handleEmail = (data) => {
       to_email: data.to_email,
       user_name: data.user_name,
       event_id: data.event_id,
+      subId: data.subId,
     },
   })
     .then((res) => {

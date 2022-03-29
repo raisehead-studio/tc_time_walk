@@ -137,6 +137,18 @@ const UserEventCard = ({ event, uid }) => {
     }
   }, []);
 
+  let price;
+  if (
+    event.numOfParticipant >= +event.discount_amount &&
+    +event.discount_amount !== 0
+  ) {
+    price = Math.floor(
+      event.numOfParticipant * event.price * (event.discount_rate * 0.01)
+    );
+  } else {
+    price = +event.numOfParticipant * event.price;
+  }
+
   return (
     <CustomCard>
       <CustomCardRow head>
@@ -194,9 +206,7 @@ const UserEventCard = ({ event, uid }) => {
       </CustomCardRow>
       <CustomCardRow>
         <CustomCardRowTitle>總價(Total Amount) :</CustomCardRowTitle>
-        <CustomCardRowText>
-          {event.price * event.numOfParticipant}
-        </CustomCardRowText>
+        <CustomCardRowText>{price}</CustomCardRowText>
       </CustomCardRow>
       <CustomCardRow bottom>
         <CustomCardRowTitle>付款(Payment Status) :</CustomCardRowTitle>

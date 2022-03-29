@@ -94,6 +94,8 @@ const UserEventLists = (props) => {
     }
   };
 
+  console.log(userEvents);
+
   if (true) {
     return (
       <MobileContainer>

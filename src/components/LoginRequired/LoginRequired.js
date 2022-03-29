@@ -24,7 +24,7 @@ const LoginRequired = (props) => {
   React.useEffect(() => {
     if (user) {
       const { email } = user.multiFactor.user;
-      if (email === "tctimewalk3.0@gmail.com") {
+      if (email === "tctimewalk3.0@gmail.com" || "hinrick71@gmail.com") {
         dispatch(handleIsAdmin(true));
       } else {
         dispatch(handleIsAdmin(false));

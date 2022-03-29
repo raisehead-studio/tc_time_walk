@@ -132,7 +132,7 @@ const Header = ({ user }) => {
               window.open("https://www.tctimewalk.com/", "_blank");
             }}
             src={
-              "https://tctimewalk.studios-coming.com/wp-content/uploads/2021/09/TC-Time-Walk_logo.svg"
+              "https://tctimewalk.com/wp-content/uploads/2021/09/TC-Time-Walk_logo.svg"
             }
           />
         </HeaderContainerLeft>

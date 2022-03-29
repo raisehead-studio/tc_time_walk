@@ -12,6 +12,7 @@ import MonetizationOn from "@material-ui/icons/MonetizationOn";
 import MoreVert from "@material-ui/icons/MoreVert";
 import Swal from "sweetalert2";
 
+import Spinner from "../components/Spinner/Spinner";
 import { handleFetchUserData } from "../redux/events";
 import firebase from "../util/firebase";
 import { handleECPayment } from "../util/api";
@@ -33,6 +34,7 @@ const UserEventLists = (props) => {
   const [state, setState] = React.useState({
     open: false,
     paymentPage: null,
+    is_paying: false,
   });
 
   React.useEffect(() => {
@@ -68,7 +70,12 @@ const UserEventLists = (props) => {
     };
 
     handleECPayment(data).then((res) => {
-      setState((state) => ({ ...state, open: true, paymentPage: res.data }));
+      setState((state) => ({
+        ...state,
+        open: true,
+        paymentPage: res.data,
+        is_paying: true,
+      }));
       document.open();
       document.write(res.data);
       document.close();
@@ -94,11 +101,10 @@ const UserEventLists = (props) => {
     }
   };
 
-  console.log(userEvents);
-
   if (true) {
     return (
       <MobileContainer>
+        <Loading is_show={state.is_paying} />
         {userEvents.length === 0 ? (
           <UserEventListItem>
             <NoDataText width={100}>
@@ -234,11 +240,31 @@ const UserEventLists = (props) => {
   );
 };
 
+const Loading = ({ is_show }) => {
+  return (
+    <LoadingWrapper is_show={is_show}>
+      <Spinner></Spinner>
+    </LoadingWrapper>
+  );
+};
+
+const LoadingWrapper = styled.div`
+  position: absolute;
+  width: 80%;
+  margin: 0px 10%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: ${(p) => (p.is_show ? "flex" : "none")};
+  justify-content: center;
+  align-items: center;
+`;
+
 const MobileContainer = styled.div`
   width: 100%;
   height: 80vh;
   overflow-y: scroll;
   transform: translateY(65px);
+  position: relative;
 `;
 
 const PaymentContainer = styled.div`

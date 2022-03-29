@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
 import { useHistory } from "react-router";
-
 import Card from "@material-ui/core/Card";
 import MonetizationOn from "@material-ui/icons/MonetizationOn";
+
 import { handleECPayment } from "../util/api";
 import Swal from "sweetalert2";
 
@@ -31,8 +31,8 @@ const UserEventCard = ({ event, uid }) => {
       payment_status = <IsPardText>報名成功</IsPardText>;
     } else {
       payment_status = (
-        <ClickToPay>
-          <MonetizationOn onClick={() => handlePurchase(event.id)} />
+        <ClickToPay onClick={() => handlePurchase(event.id)}>
+          <MonetizationOn />
           <p>點我付款</p>
         </ClickToPay>
       );
@@ -223,6 +223,7 @@ const CustomCard = styled(Card)`
   width: 80%;
   margin: 10px 10%;
   padding: 5px;
+  /* position: relative; */
 
   @media (max-width: 750px) {
     width: 95%;

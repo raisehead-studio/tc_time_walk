@@ -2,7 +2,9 @@ import axios from "axios";
 
 const baseUrl = "https://tctimewalkadmin-default-rtdb.firebaseio.com/";
 
-const baseUrls = "https://tctimewalk.herokuapp.com/";
+// const baseUrls = "https://tctimewalk.herokuapp.com/";
+const baseUrls = "http://127.0.0.1:8000/";
+
 // const baseUrls =
 //   "https://1888-2001-b011-e60d-328c-75ba-ca4b-4fc3-44c6.ngrok.io";
 

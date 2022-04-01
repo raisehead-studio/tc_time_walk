@@ -283,10 +283,9 @@ const EventRegisterForm = (props) => {
                 handleSendEmail({
                   email_type: "2",
                   to_email: "tctimewalk3.0@gmail.com",
-
                   user_name: name,
                   event_id: eventId,
-                  subId: "",
+                  subId: subId,
                 })
               );
               setTimeout(() => {

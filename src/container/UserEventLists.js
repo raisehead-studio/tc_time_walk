@@ -53,7 +53,7 @@ const UserEventLists = (props) => {
       price =
         +eventData.numOfParticipant *
         +eventData.price *
-        (+eventData.discount_rate * 0.1);
+        (+eventData.discount_rate * 0.01);
     } else {
       price = +eventData.numOfParticipant * +eventData.price;
     }

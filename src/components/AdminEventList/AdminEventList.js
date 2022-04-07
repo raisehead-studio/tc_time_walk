@@ -487,8 +487,6 @@ const InfoDetail = ({
       if (value) {
         const { email, name, eventId } = userDetail;
 
-        console.log(email);
-
         let type;
         if (is_free) {
           if (pass) {
@@ -514,10 +512,9 @@ const InfoDetail = ({
             to_email: email,
             user_name: name,
             event_id: eventId,
-            subId: "",
+            subId: sub_id,
           })
         );
-        // handleCloseModal();
       }
     });
   };
@@ -592,8 +589,10 @@ const InfoDetail = ({
       <InfoDetailItemContainer isBack>
         <ButtonContainer>
           {/* <Buttons onClick={handleNotifyUser}>寄信通知報名人</Buttons> */}
-          <Buttons onClick={() => handleNotifyUser(true)}>確認審核通過</Buttons>
-          <Buttons onClick={() => handleNotifyUser(false)}>
+          <Buttons onClick={() => handleNotifyUser(true, sub_id)}>
+            確認審核通過
+          </Buttons>
+          <Buttons onClick={() => handleNotifyUser(false, sub_id)}>
             確認審核未通過
           </Buttons>
         </ButtonContainer>

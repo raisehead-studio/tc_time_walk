@@ -310,8 +310,6 @@ const BriefInfo = ({ dataList, infoId, handleFetchUserInfo }) => {
     setState((state) => ({ ...state, data_list: update_data }));
   }, [dataList, infoId]);
 
-  console.log(dataList);
-
   return (
     <React.Fragment>
       <ButtonContainer>
@@ -519,6 +517,16 @@ const InfoDetail = ({
     });
   };
 
+  console.log(userDetail);
+
+  let language;
+  if (userDetail.language === "chinese") {
+    language = "中文";
+  } else if (userDetail.language === "english") {
+    language = "英文";
+  } else {
+    language = "其他";
+  }
   return (
     <InfoDetailContainer>
       <InfoDetailHeadContainer>
@@ -528,6 +536,7 @@ const InfoDetail = ({
               handleModalDisplay(0);
             }}
           />
+          <p>{userDetail.eventName}</p>
         </InfoDetailHeadIconContainer>
       </InfoDetailHeadContainer>
       <InfoDetailItemContainer>
@@ -577,6 +586,16 @@ const InfoDetail = ({
           </InfoDetailItemKey>
           <InfoDetailItemValue>
             <p>{userDetail.isPaid ? "已付款" : "未付款"}</p>
+          </InfoDetailItemValue>
+        </InfoDetailItemInnerContainer>
+      </InfoDetailItemContainer>
+      <InfoDetailItemContainer>
+        <InfoDetailItemInnerContainer>
+          <InfoDetailItemKey>
+            <p>語言</p>
+          </InfoDetailItemKey>
+          <InfoDetailItemValue>
+            <p>{language}</p>
           </InfoDetailItemValue>
         </InfoDetailItemInnerContainer>
       </InfoDetailItemContainer>
@@ -672,10 +691,16 @@ const InfoDetailHeadContainer = styled.div`
 `;
 
 const InfoDetailHeadIconContainer = styled.div`
-  padding: 20px 10% 10px 10%;
+  padding: 20px 10% 20px 10%;
   border-bottom: 0.5px solid #ececec;
   width: 100%;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  > p {
+    padding-left: 50px;
+  }
 `;
 
 const InfoDetailHeadIcon = styled(ArrowBackIos)``;
